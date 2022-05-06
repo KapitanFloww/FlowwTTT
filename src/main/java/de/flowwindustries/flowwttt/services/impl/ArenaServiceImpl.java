@@ -5,8 +5,6 @@ import de.flowwindustries.flowwttt.domain.locations.ChestSpawn;
 import de.flowwindustries.flowwttt.domain.Identifiable;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
-import de.flowwindustries.flowwttt.repository.ChestSpawnRepository;
-import de.flowwindustries.flowwttt.repository.PlayerSpawnRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -26,8 +24,6 @@ public class ArenaServiceImpl implements ArenaService {
     private static final String ARENA_SPAWN_NOT_FOUND = "Spawn point with id: %s not found";
 
     private final ArenaRepository arenaRepository;
-    private final PlayerSpawnRepository playerSpawnRepository;
-    private final ChestSpawnRepository chestSpawnRepository;
 
     @Override
     public void createArena(String name) {

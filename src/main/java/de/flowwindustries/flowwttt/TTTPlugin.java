@@ -6,8 +6,6 @@ import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.ChestSpawn;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
-import de.flowwindustries.flowwttt.repository.ChestSpawnRepository;
-import de.flowwindustries.flowwttt.repository.PlayerSpawnRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.impl.ArenaServiceImpl;
 import lombok.Getter;
@@ -30,9 +28,7 @@ public final class TTTPlugin extends JavaPlugin {
         setupConfig();
 
         ArenaRepository arenaRepository = new ArenaRepository(Arena.class);
-        PlayerSpawnRepository playerSpawnRepository = new PlayerSpawnRepository(PlayerSpawn.class);
-        ChestSpawnRepository chestSpawnRepository = new ChestSpawnRepository(ChestSpawn.class);
-        this.arenaService = new ArenaServiceImpl(arenaRepository, playerSpawnRepository, chestSpawnRepository);
+        this.arenaService = new ArenaServiceImpl(arenaRepository);
 
         setupCommands();
 
