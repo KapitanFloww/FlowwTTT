@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+                    http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+             version="2.1">
+    <persistence-unit name="persistence-unit" transaction-type="RESOURCE_LOCAL">
+
+        <class>de.flowwindustries.flowwttt.domain.locations.Arena</class>
+        <class>de.flowwindustries.flowwttt.domain.locations.PlayerSpawn</class>
+        <class>de.flowwindustries.flowwttt.domain.locations.ChestSpawn</class>
+        <class>de.flowwindustries.flowwttt.domain.locations.PlayerTester</class>
+        <class>de.flowwindustries.flowwttt.domain.locations.Lobby</class>
+
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+
+        <properties>
+            <!-- Hibernate Specific -->
+            <property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.SunOneJtaPlatform"/>
+        </properties>
+
+    </persistence-unit>
+</persistence>

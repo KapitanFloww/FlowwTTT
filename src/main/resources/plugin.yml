@@ -1,0 +1,12 @@
+name: FlowwTTT
+version: '${project.version}'
+main: de.flowwindustries.flowwttt.TTTPlugin
+api-version: 1.18
+prefix: FlowwTTT
+authors: [ Kapitan_Floww ]
+description: Trouble in Terrorist Town Plugin
+
+commands:
+  arena:
+    description: Manage arenas
+    permission: ttt.arena

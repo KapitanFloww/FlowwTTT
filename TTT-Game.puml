@@ -1,0 +1,41 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class GameMaster {
+    start()
+    kill()
+    setStage()
+}
+class GameInstance {
+    Stage stage
+    Map playerRoles
+    Player[] activePlayers
+    Player[] deadPlayers
+}
+class RoleService {
+    getRandomRole(GameInstance instance)
+}
+class Arena
+class Lobby
+
+
+enum Stage {
+    LOBBY
+    PREGAME
+    RUNNING
+    POSTGAME
+}
+enum Role {
+    INNOCENT
+    DETECTIVE
+    TRAITOR
+}
+
+GameInstance <-- RoleService : uses
+GameInstance .. Stage
+Arena "1" <.. "*" GameInstance : take place in
+Lobby "1" <.. "*" GameInstance : players return to
+GameMaster *-- GameInstance : has ownership
+RoleService .. Role : supplies random
+
+@enduml
