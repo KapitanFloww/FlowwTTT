@@ -33,10 +33,13 @@ public abstract class AbstractCommand implements CommandExecutor {
             } catch (InsufficientPermissionsException ex) {
                 PlayerMessage.error(NO_PERMISSION, player);
                 log.warning(String.format(NO_PERMISSION_LOG, ex.getSender().getName(), ex.getPermission()));
+                return true;
             } catch (InvalidArgumentException ex) {
                 PlayerMessage.warn(String.format(INVALID_ARGUMENTS, ex.getReason()), player);
+                return false;
             } catch (IllegalArgumentException ex) {
                 PlayerMessage.warn(String.format(INVALID_ARGUMENTS, ex.getMessage()), player);
+                return false;
             }
         }
         //If sender is not player
@@ -44,10 +47,11 @@ public abstract class AbstractCommand implements CommandExecutor {
             return consoleCommand(args);
         } catch (InvalidArgumentException ex) {
             log.warning(String.format(INVALID_ARGUMENTS, ex.getReason()));
+            return false;
         } catch (IllegalArgumentException ex) {
             log.warning(ex.getMessage());
+            return false;
         }
-        return false;
     }
 
     /**

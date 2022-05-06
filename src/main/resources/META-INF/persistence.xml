@@ -11,6 +11,7 @@
         <class>de.flowwindustries.flowwttt.domain.locations.ChestSpawn</class>
         <class>de.flowwindustries.flowwttt.domain.locations.PlayerTester</class>
         <class>de.flowwindustries.flowwttt.domain.locations.Lobby</class>
+        <class>de.flowwindustries.flowwttt.domain.ArchivedGame</class>
 
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 

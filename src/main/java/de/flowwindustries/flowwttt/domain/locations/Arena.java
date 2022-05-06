@@ -8,7 +8,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Entity for arenas.
@@ -21,29 +21,19 @@ public class Arena {
      * Arena name.
      */
     @Id
-    private String name;
-
-    /**
-     * Player counter.
-     */
-    private int playerCounter;
-
-    /**
-     * Chest counter.
-     */
-    private int chestCounter;
+    private String arenaName;
 
     /**
      * SpawnPoints of the arena.
      */
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Collection<PlayerSpawn> playerSpawns;
+    private List<PlayerSpawn> playerSpawns;
 
     /**
      * Chest spawn points of the arena.
      */
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Collection<ChestSpawn> chestSpawns;
+    private List<ChestSpawn> chestSpawns;
 
     /**
      * Location of the player tester.

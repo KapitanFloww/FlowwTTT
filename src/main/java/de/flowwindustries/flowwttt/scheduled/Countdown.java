@@ -1,0 +1,97 @@
+package de.flowwindustries.flowwttt.scheduled;
+
+import de.flowwindustries.flowwttt.TTTPlugin;
+import de.flowwindustries.flowwttt.services.GameManagerService;
+import de.flowwindustries.flowwttt.services.impl.GameManagerServiceImpl;
+import lombok.Getter;
+import org.bukkit.Bukkit;
+
+import java.util.function.Consumer;
+
+/**
+ * Class to simplify the implementation of countdowns.
+ * Simply create a new instance of this class and call {@code scheduleCountdown()}.
+ * Based on <a href="https://www.spigotmc.org/threads/creating-a-countdown.266702/">ExpDev from Spigotmc.org</a>
+ */
+public class Countdown implements Runnable {
+
+    /**
+     * This task's id - required for canceling.
+     */
+    private Integer taskId;
+
+    /**
+     * Plugin instance.
+     */
+    private final TTTPlugin plugin;
+
+    /**
+     * Associated instance id.
+     */
+    private final String instanceId;
+
+    /**
+     * Task to be run before the countdown starts.
+     */
+    private final Runnable beforeCountdown;
+
+    /**
+     * Task to be run when the countdown ends.
+     */
+    private final Runnable afterCountdown;
+
+    /**
+     * To do each second.
+     */
+    private final Consumer<Countdown> secondsConsumer;
+
+    /**
+     * The total time.
+     */
+    @Getter
+    private final int time;
+
+    /**
+     * The current time left.
+     */
+    @Getter
+    private int timeLeft;
+
+    public Countdown(TTTPlugin plugin, String instanceId, int totalSeconds, Runnable beforeCountdown, Runnable afterCountdown, Consumer<Countdown> secondsConsumer) {
+        this.plugin = plugin;
+        this.instanceId = instanceId;
+        this.time = totalSeconds;
+        this.timeLeft = totalSeconds;
+        this.beforeCountdown = beforeCountdown;
+        this.afterCountdown = afterCountdown;
+        this.secondsConsumer = secondsConsumer;
+    }
+
+    /**
+     * Countdown logic to be performed.
+     */
+    @Override
+    public void run() {
+        if(timeLeft < 1) {
+            afterCountdown.run();
+            if(taskId != null) {
+                Bukkit.getScheduler().cancelTask(taskId);
+                GameManagerService.removeInstanceTaskId(this.instanceId, this.taskId);
+                return;
+            }
+        }
+        if(time == timeLeft) { // Start
+            beforeCountdown.run();
+        }
+        secondsConsumer.accept(this);
+        timeLeft--;
+    }
+
+    /**
+     * Schedule and run this countdown.
+     */
+    public void scheduleCountdown() {
+        this.taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0L, 20L); // Run every 20 ticks = 1 second
+        GameManagerService.addInstanceTaskId(this.instanceId, this.taskId);
+    }
+}

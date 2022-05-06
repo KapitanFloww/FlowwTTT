@@ -43,4 +43,12 @@ public class ConfigurationUtils {
         }
         throw new RuntimeException("Invalid value type on path: " + path);
     }
+
+    public static String readString(String path) {
+        return read(String.class, path);
+    }
+
+    public static boolean readBoolean(String path) {
+        return read(Boolean.class, path);
+    }
 }

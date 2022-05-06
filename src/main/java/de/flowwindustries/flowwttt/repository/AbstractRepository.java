@@ -1,6 +1,5 @@
 package de.flowwindustries.flowwttt.repository;
 
-import de.flowwindustries.flowwttt.config.ConfigurationUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
@@ -12,6 +11,17 @@ import lombok.RequiredArgsConstructor;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Properties;
+
+import static de.flowwindustries.flowwttt.config.ConfigurationUtils.readBoolean;
+import static de.flowwindustries.flowwttt.config.ConfigurationUtils.readString;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_CONNECTION_PROVIDER;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_DDL_AUTO;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_DRIVER;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_URL;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_PASSWORD;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_SHOW_SQL;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_USERNAME;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_DIALECT;
 
 /**
  * Abstract class to provide easy functionality to access the persistence layer.
@@ -130,32 +140,27 @@ public abstract class AbstractRepository<E, I> {
 
     private void setupEntityManagerFactory() {
         if (entityManagerFactory == null || !entityManagerFactory.isOpen()) {
-            boolean remoteDatabase = ConfigurationUtils.read(Boolean.class, "database.remote");
-            boolean showSQL = ConfigurationUtils.read(Boolean.class, "database.show-sql");
-            String ddlAuto = ConfigurationUtils.read(String.class, "database.ddl-auto");
+
+            var showSQL = readBoolean(PATH_HIBERNATE_SHOW_SQL);
+            var ddlAuto = readString(PATH_HIBERNATE_DDL_AUTO);
+            var hibernateDialect = readString(PATH_HIBERNATE_DIALECT);
+            var connectionProviderClass = readString(PATH_HIBERNATE_CONNECTION_PROVIDER);
 
             Properties properties = new Properties();
             properties.put("hibernate.show_sql", showSQL);
             properties.put("hibernate.hbm2ddl.auto", ddlAuto);
-            properties.put("hibernate.connection.provider_class", "org.hibernate.hikaricp.internal.HikariCPConnectionProvider");
+            properties.put("hibernate.connection.provider_class", connectionProviderClass);
+            properties.put("hibernate.dialect", hibernateDialect);
 
-            if (remoteDatabase) { // Setup MariaDB Connection
-                String databaseHost = ConfigurationUtils.read(String.class, "database.mariadb.host");
-                int databasePort = ConfigurationUtils.read(Integer.class, "database.mariadb.port");
-                String databaseName = ConfigurationUtils.read(String.class, "database.mariadb.database");
-                String databaseUsername = ConfigurationUtils.read(String.class, "database.mariadb.username");
-                String databasePassword = ConfigurationUtils.read(String.class, "database.mariadb.password");
+            var jdbcDriver = readString(PATH_DATASOURCE_JDBC_DRIVER);
+            var jdbcUrl = readString(PATH_DATASOURCE_JDBC_URL);
+            var databaseUsername = readString(PATH_DATASOURCE_JDBC_USERNAME);
+            var databasePassword = readString(PATH_DATASOURCE_JDBC_PASSWORD);
 
-                properties.put("jakarta.persistence.jdbc.driver", "org.mariadb.jdbc.Driver");
-                properties.put("jakarta.persistence.jdbc.url", "jdbc:mariadb://" + databaseHost + ":" + databasePort + "/" + databaseName + "?autoReconnect=true");
-                properties.put("jakarta.persistence.jdbc.user", databaseUsername);
-                properties.put("jakarta.persistence.jdbc.password", databasePassword);
-                properties.put("hibernate.dialect", "org.hibernate.dialect.MariaDBDialect");
-            } else { // Setup H2 Connection
-                properties.put("javax.persistence.jdbc.driver", "org.h2.Driver");
-                properties.put("javax.persistence.jdbc.url", "jdbc:h2:file:~/test;USER=sa;PASSWORD=password");
-                properties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
-            }
+            properties.put("jakarta.persistence.jdbc.driver", jdbcDriver);
+            properties.put("jakarta.persistence.jdbc.url", jdbcUrl);
+            properties.put("jakarta.persistence.jdbc.user", databaseUsername);
+            properties.put("jakarta.persistence.jdbc.password", databasePassword);
 
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
             entityManagerFactory = Persistence.createEntityManagerFactory("persistence-unit", properties);
