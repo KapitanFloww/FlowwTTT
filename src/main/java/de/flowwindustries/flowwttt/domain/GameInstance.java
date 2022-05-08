@@ -72,7 +72,7 @@ public class GameInstance {
         int playerSize = players.size();
         log.config("Assigning roles for " + playerSize + " players");
 
-        // TODO: Assign roles
+        // TODO #4: Assign roles
         // Call RoleService and fetch the map of roles and players
         // 10% Detective
         // 60% Innocent
@@ -103,18 +103,18 @@ public class GameInstance {
      */
     public void setStage(Stage stage) {
         this.stage = stage;
-        switch (stage) { //TODO implement logic
-            case LOBBY -> System.out.println("Returning to lobby");
+        switch (stage) { //TODO #2 implement logic
+            case LOBBY -> System.out.println("Returning to lobby"); // Return to lobby and quit the instance
             case COUNTDOWN -> initializeCountdown();
             case GRACE_PERIOD -> initializeGracePeriod();
-            case RUNNING -> System.out.println("Running complete");
-            case ENDGAME -> System.out.println("Endgame complete");
+            case RUNNING -> System.out.println("Running complete"); // Disable grace period, keep track of the players
+            case ENDGAME -> System.out.println("Endgame complete"); // 10s countdown to display the results and winner
         }
     }
 
     private void initializeCountdown() {
         // Teleport players to their spawns
-        log.info("Initializing COUNTDOWN stage");
+        log.info(String.format("Initializing %s stage", Stage.COUNTDOWN));
         for(int i=0; i<this.players.size(); i++) {
             Player player = this.players.get(i);
             PlayerSpawn spawn = this.getArena().getPlayerSpawns().get(i);
@@ -146,7 +146,7 @@ public class GameInstance {
     }
 
     private void initializeGracePeriod() {
-        log.info("Initialize GRACE_PERIOD stage");
+        log.info(String.format("Initialize %s stage", Stage.GRACE_PERIOD));
         // Count down from 30s
         BukkitRunnable countdown = new BukkitRunnable() {
             private int timer = 30;
