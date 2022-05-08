@@ -21,17 +21,7 @@ public class Arena {
      * Arena name.
      */
     @Id
-    private String name;
-
-    /**
-     * Player counter.
-     */
-    private int playerCounter;
-
-    /**
-     * Chest counter.
-     */
-    private int chestCounter;
+    private String arenaName;
 
     /**
      * SpawnPoints of the arena.

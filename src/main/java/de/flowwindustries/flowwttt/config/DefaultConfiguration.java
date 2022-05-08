@@ -9,6 +9,16 @@ import org.bukkit.configuration.file.FileConfiguration;
 @Log
 public class DefaultConfiguration {
 
+    public static final String PATH_DB_REMOTE = "database.remote";
+    public static final String PATH_DB_SHOW_SQL = "database.show-sql";
+    public static final String PATH_DB_DDL = "database.ddl-auto";
+    public static final String PATH_DB_HOST = "database.mariadb.host";
+    public static final String PATH_DB_PORT = "database.mariadb.port";
+    public static final String PATH_DB_DATABASE = "database.mariadb.database";
+    public static final String PATH_DB_USERNAME = "database.mariadb.username";
+    public static final String PATH_DB_PASSWORD = "database.mariadb.password";
+    public static final String PATH_DEFAULT_LOBBY = "lobby.default.name";
+
     /**
      * Setup default configuration values for the given {@link FileConfiguration}.
      * @param configuration the configuration file
@@ -16,15 +26,17 @@ public class DefaultConfiguration {
     public static void setupDefaultConfiguration(FileConfiguration configuration) {
         log.info("Setting up default configuration values");
         //Setup values
-        configuration.addDefault("database.remote", true);
-        configuration.addDefault("database.show-sql", false);
-        configuration.addDefault("database.ddl-auto", "update");
+        configuration.addDefault(PATH_DB_REMOTE, true);
+        configuration.addDefault(PATH_DB_SHOW_SQL, false);
+        configuration.addDefault(PATH_DB_DDL, "update");
 
-        configuration.addDefault("database.mariadb.host", "localhost");
-        configuration.addDefault("database.mariadb.port", 3306);
-        configuration.addDefault("database.mariadb.database", "ttt");
-        configuration.addDefault("database.mariadb.username", "ttt");
-        configuration.addDefault("database.mariadb.password", "password");
+        configuration.addDefault(PATH_DB_HOST, "localhost");
+        configuration.addDefault(PATH_DB_PORT, 3306);
+        configuration.addDefault(PATH_DB_DATABASE, "ttt");
+        configuration.addDefault(PATH_DB_USERNAME, "ttt");
+        configuration.addDefault(PATH_DB_PASSWORD, "password");
+
+        configuration.addDefault(PATH_DEFAULT_LOBBY, "Lobby");
         //Save configuration
         configuration.options().copyDefaults(true);
     }

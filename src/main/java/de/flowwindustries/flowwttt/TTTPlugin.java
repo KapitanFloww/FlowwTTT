@@ -1,42 +1,44 @@
 package de.flowwindustries.flowwttt;
 
 import de.flowwindustries.flowwttt.commands.ArenaCommand;
+import de.flowwindustries.flowwttt.commands.LobbyCommand;
 import de.flowwindustries.flowwttt.config.DefaultConfiguration;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
-import de.flowwindustries.flowwttt.domain.locations.ChestSpawn;
-import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
+import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
+import de.flowwindustries.flowwttt.repository.LobbyRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
+import de.flowwindustries.flowwttt.services.LobbyService;
 import de.flowwindustries.flowwttt.services.impl.ArenaServiceImpl;
+import de.flowwindustries.flowwttt.services.impl.LobbyServiceImpl;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.text.DecimalFormat;
+
 @Log
 public final class TTTPlugin extends JavaPlugin {
+
+    public static final DecimalFormat COORDINATE_FORMATTER = new DecimalFormat("#.##");
+
     @Getter
     private static TTTPlugin instance;
     @Getter
-    private ArenaService arenaService;
-    @Getter
     private FileConfiguration configuration;
+
+    // Services
+    private ArenaService arenaService;
+    private LobbyService lobbyService;
 
     @Override
     public void onEnable() {
         instance = this;
         setupConfig();
-
-        ArenaRepository arenaRepository = new ArenaRepository(Arena.class);
-        this.arenaService = new ArenaServiceImpl(arenaRepository);
-
+        setupServices();
         setupCommands();
-
         log.info("Initialization complete!");
-    }
-
-    private void setupCommands() {
-        this.getCommand("arena").setExecutor(new ArenaCommand("ttt.arena", arenaService));
     }
 
     private void setupConfig() {
@@ -47,7 +49,15 @@ public final class TTTPlugin extends JavaPlugin {
         this.saveConfig();
     }
 
-    @Override
-    public void onDisable() {
+    private void setupServices() {
+        ArenaRepository arenaRepository = new ArenaRepository(Arena.class);
+        this.arenaService = new ArenaServiceImpl(arenaRepository);
+        LobbyRepository lobbyRepository = new LobbyRepository(Lobby.class);
+        this.lobbyService = new LobbyServiceImpl(lobbyRepository, arenaService);
+    }
+
+    private void setupCommands() {
+        this.getCommand("arena").setExecutor(new ArenaCommand("ttt.arena", arenaService));
+        this.getCommand("lobby").setExecutor(new LobbyCommand("ttt.lobby", lobbyService));
     }
 }

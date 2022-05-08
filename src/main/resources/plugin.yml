@@ -10,3 +10,6 @@ commands:
   arena:
     description: Manage arenas
     permission: ttt.arena
+  lobby:
+    description: Manage waiting lobbies
+    permission:  ttt.lobby

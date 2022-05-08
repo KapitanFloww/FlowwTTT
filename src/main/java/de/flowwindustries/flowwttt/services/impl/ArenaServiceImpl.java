@@ -28,11 +28,11 @@ public class ArenaServiceImpl implements ArenaService {
     @Override
     public void createArena(String name) {
         Arena arena = new Arena();
-        arena.setName(name);
+        arena.setArenaName(name);
         arena.setPlayerSpawns(new ArrayList<>());
         arena.setChestSpawns(new ArrayList<>());
         arenaRepository.create(arena);
-        log.info("Created new arena: " + arena.getName());
+        log.info("Created new arena: " + arena.getArenaName());
     }
 
     @Override
@@ -74,28 +74,28 @@ public class ArenaServiceImpl implements ArenaService {
     public Arena updateName(String oldName, String newName) {
         Arena arena = getArenaSafe(oldName);
         log.info("Request to update arena name of: " + oldName + " to: " + newName);
-        arena.setName(newName);
+        arena.setArenaName(newName);
         return arenaRepository.edit(arena);
     }
 
     @Override
-    public Arena clearPlayerSpawn(String name, int id) throws IllegalArgumentException {
+    public void clearPlayerSpawn(String name, int id) throws IllegalArgumentException {
         Arena arena = getArenaSafe(name);
         log.info("Request to remove player spawn with id: " + id + " from arena: " + name);
 
         PlayerSpawn spawn = filterSpawnSafe(arena.getPlayerSpawns(), id);
         arena.getPlayerSpawns().remove(spawn);
-        return arenaRepository.edit(arena);
+        arenaRepository.edit(arena);
     }
 
     @Override
-    public Arena clearChestSpawn(String name, int id) throws IllegalArgumentException {
+    public void clearChestSpawn(String name, int id) throws IllegalArgumentException {
         Arena arena = getArenaSafe(name);
         log.info("Request to remove chest spawn with id: " + id + " from arena: " + name);
 
         ChestSpawn spawn = filterSpawnSafe(arena.getChestSpawns(), id);
         arena.getChestSpawns().remove(spawn);
-        return arenaRepository.edit(arena);
+        arenaRepository.edit(arena);
     }
 
     @Override
@@ -111,11 +111,9 @@ public class ArenaServiceImpl implements ArenaService {
         Optional<S> spawn =  spawns.stream()
                 .filter(playerSpawn -> playerSpawn.getId().equals(id))
                 .findFirst();
-
         if(spawn.isEmpty()) {
             throw new IllegalArgumentException(String.format(ARENA_SPAWN_NOT_FOUND, id));
         }
-
         return spawn.get();
     }
 }

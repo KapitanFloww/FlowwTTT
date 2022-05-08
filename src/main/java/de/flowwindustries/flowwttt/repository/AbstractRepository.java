@@ -13,6 +13,15 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Properties;
 
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DB_DATABASE;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DB_DDL;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DB_HOST;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DB_PASSWORD;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DB_PORT;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DB_REMOTE;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DB_SHOW_SQL;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DB_USERNAME;
+
 /**
  * Abstract class to provide easy functionality to access the persistence layer.
  * @param <E> the entity class
@@ -130,9 +139,9 @@ public abstract class AbstractRepository<E, I> {
 
     private void setupEntityManagerFactory() {
         if (entityManagerFactory == null || !entityManagerFactory.isOpen()) {
-            boolean remoteDatabase = ConfigurationUtils.read(Boolean.class, "database.remote");
-            boolean showSQL = ConfigurationUtils.read(Boolean.class, "database.show-sql");
-            String ddlAuto = ConfigurationUtils.read(String.class, "database.ddl-auto");
+            boolean remoteDatabase = ConfigurationUtils.read(Boolean.class, PATH_DB_REMOTE);
+            boolean showSQL = ConfigurationUtils.read(Boolean.class, PATH_DB_SHOW_SQL);
+            String ddlAuto = ConfigurationUtils.read(String.class, PATH_DB_DDL);
 
             Properties properties = new Properties();
             properties.put("hibernate.show_sql", showSQL);
@@ -140,11 +149,11 @@ public abstract class AbstractRepository<E, I> {
             properties.put("hibernate.connection.provider_class", "org.hibernate.hikaricp.internal.HikariCPConnectionProvider");
 
             if (remoteDatabase) { // Setup MariaDB Connection
-                String databaseHost = ConfigurationUtils.read(String.class, "database.mariadb.host");
-                int databasePort = ConfigurationUtils.read(Integer.class, "database.mariadb.port");
-                String databaseName = ConfigurationUtils.read(String.class, "database.mariadb.database");
-                String databaseUsername = ConfigurationUtils.read(String.class, "database.mariadb.username");
-                String databasePassword = ConfigurationUtils.read(String.class, "database.mariadb.password");
+                String databaseHost = ConfigurationUtils.read(String.class, PATH_DB_HOST);
+                int databasePort = ConfigurationUtils.read(Integer.class, PATH_DB_PORT);
+                String databaseName = ConfigurationUtils.read(String.class, PATH_DB_DATABASE);
+                String databaseUsername = ConfigurationUtils.read(String.class, PATH_DB_USERNAME);
+                String databasePassword = ConfigurationUtils.read(String.class, PATH_DB_PASSWORD);
 
                 properties.put("jakarta.persistence.jdbc.driver", "org.mariadb.jdbc.Driver");
                 properties.put("jakarta.persistence.jdbc.url", "jdbc:mariadb://" + databaseHost + ":" + databasePort + "/" + databaseName + "?autoReconnect=true");
