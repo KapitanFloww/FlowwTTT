@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.Map;
 
 public interface RoleService {
-    Map<Player, Role> assignRoles(List<Player> players, List<Role> roles, Map<Role, Integer> roleRatios);
+    Map<Player, Role> assignRoles(List<Player> players, List<Role> roles, Map<Role, Float> roleRatios);
 }

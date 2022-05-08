@@ -13,7 +13,7 @@ public class RoleServiceImpl implements RoleService {
 
 
     @Override
-    public Map<Player, Role> assignRoles(List<Player> players, List<Role> roles, Map<Role, Integer> roleRatios) {
+    public Map<Player, Role> assignRoles(List<Player> players, List<Role> roles, Map<Role, Float> roleRatios) {
 
         int nPlayersRemaining = players.size();
 
