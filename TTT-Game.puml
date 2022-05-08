@@ -34,7 +34,8 @@ enum Role {
 GameInstance <-- RoleService : uses
 GameInstance .. Stage
 Arena "1" <.. "*" GameInstance : take place in
-Lobby "1" <.. "*" GameInstance : players return to
+Lobby "1" <.. "*" GameInstance : players return and start from
+Arena "*" <.. "*" Lobby : has playable
 GameMaster *-- GameInstance : has ownership
 RoleService .. Role : supplies random
 
