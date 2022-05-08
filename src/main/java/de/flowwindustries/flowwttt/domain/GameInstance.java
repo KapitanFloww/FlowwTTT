@@ -50,7 +50,7 @@ public class GameInstance {
     /**
      * Map of players and their role.
      */
-    private final Map<Player, Role> playerRoles = new HashMap<>();
+    private Map<Player, Role> playerRoles;
 
     /**
      * Current players.
@@ -65,6 +65,7 @@ public class GameInstance {
         log.config("Assigning roles for " + playerSize + " players");
 
         // TODO: Assign roles
+        // Call RoleService and fetch the map of roles and players
         // 10% Detective
         // 60% Innocent
         // 30% Traitor

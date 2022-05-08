@@ -31,9 +31,9 @@ enum Role {
     TRAITOR
 }
 
-GameInstance <-- RoleService : uses
+GameInstance --> RoleService : uses
 GameInstance .. Stage
-Arena "1" <.. "*" GameInstance : take place in
+Arena "1" <.. "*" GameInstance : takes place in
 Lobby "1" <.. "*" GameInstance : players return and start from
 Arena "*" <.. "*" Lobby : has playable
 GameMaster *-- GameInstance : manages

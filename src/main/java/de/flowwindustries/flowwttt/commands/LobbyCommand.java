@@ -129,8 +129,8 @@ public class LobbyCommand extends AbstractCommand {
 
     private void teleportLobby(Player player, String lobbyName) {
         PlayerSpawn lobbySpawn = lobbyService.getLobbySpawn(lobbyName);
-        //TODO Check if player is in game instance
-        //TODO Remove player form game instance
+        //TODO #3 Check if player is in game instance
+        //TODO #3 Remove player form game instance
         World world = getWorldSafe(lobbySpawn.getWorldName());
         Location location = new Location(world, lobbySpawn.getX(), lobbySpawn.getY(), lobbySpawn.getZ(), lobbySpawn.getYaw(), lobbySpawn.getPitch());
         player.teleport(location);

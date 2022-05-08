@@ -21,6 +21,7 @@ public class LobbyServiceImpl implements LobbyService {
 
     public static final String LOBBY_NOT_FOUND = "Lobby with name %s does not exist";
     public static final String LOBBY_ALREADY_EXISTS = "Lobby with name %s does already exist";
+
     private static final String INVALID_NAME = "Invalid lobby name: %s";
     private final LobbyRepository lobbyRepository;
     private final ArenaService arenaService;

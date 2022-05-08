@@ -34,7 +34,7 @@ public class GameMasterServiceImpl implements GameMasterService {
 
     @Override
     public GameInstance getGameInstance(String identifier) {
-        return null; //TODO
+        return null; //TODO #2 implement
     }
 
     @Override
@@ -79,12 +79,12 @@ public class GameMasterServiceImpl implements GameMasterService {
 
     @Override
     public void end(String identifier) {
-        //TODO implement end
+        //TODO #2 implement end
     }
 
     @Override
     public void stop(String identifier) {
-        //TODO implement stop
+        //TODO #2 implement stop
     }
 
     private GameInstance getGameInstanceSafe(String identifier) {
