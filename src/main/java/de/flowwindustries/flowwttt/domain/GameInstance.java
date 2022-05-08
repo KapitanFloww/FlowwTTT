@@ -69,6 +69,9 @@ public class GameInstance {
         // 10% Detective
         // 60% Innocent
         // 30% Traitor
+
+
+
     }
 
     /**
