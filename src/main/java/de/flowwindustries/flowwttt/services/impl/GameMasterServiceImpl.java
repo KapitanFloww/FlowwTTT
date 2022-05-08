@@ -34,12 +34,25 @@ public class GameMasterServiceImpl implements GameMasterService {
 
     @Override
     public GameInstance getGameInstance(String identifier) {
-        return null; //TODO #2 implement
+        List<GameInstance> instanceList = instances.stream()
+                .filter(gameInstance -> gameInstance.getIdentifier().equalsIgnoreCase(identifier))
+                .toList();
+        if(instanceList.size() == 0) {
+            return null;
+        }
+        if(instanceList.size() > 1) {
+            throw new IllegalStateException("Found too many instances with that name");
+        }
+        return instanceList.get(0);
     }
 
     @Override
     public GameInstance getInstanceOf(Player player) {
-        return getGameInstanceSafe(playerInstanceMap.get(player));
+        try {
+            return getGameInstanceSafe(playerInstanceMap.get(player));
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
 

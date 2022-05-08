@@ -20,14 +20,15 @@ public interface GameMasterService {
     /**
      * Get the instance of this identifier.
      * @param identifier the identifier of the requested game instance
-     * @return the requested game instance
+     * @return the requested game instance or {@code null} if no game instance exists for this identifier
+     * @throws IllegalStateException if more than one game instance with that identifier is found
      */
     GameInstance getGameInstance(String identifier);
 
     /**
      * Get a players instance.
      * @param player the player to get the instance from.
-     * @return the game instance
+     * @return the game instance of {@code null} if the player is not accoiated to an instance
      */
     GameInstance getInstanceOf(Player player);
 
