@@ -36,7 +36,7 @@ GameInstance .. Stage
 Arena "1" <.. "*" GameInstance : take place in
 Lobby "1" <.. "*" GameInstance : players return and start from
 Arena "*" <.. "*" Lobby : has playable
-GameMaster *-- GameInstance : has ownership
+GameMaster *-- GameInstance : manages
 RoleService .. Role : supplies random
 
 @enduml

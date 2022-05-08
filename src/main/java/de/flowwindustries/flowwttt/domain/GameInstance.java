@@ -1,13 +1,22 @@
 package de.flowwindustries.flowwttt.domain;
 
+import de.flowwindustries.flowwttt.TTTPlugin;
+import de.flowwindustries.flowwttt.commands.PlayerMessage;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
-import lombok.Data;
+import de.flowwindustries.flowwttt.domain.locations.Lobby;
+import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
 import lombok.extern.java.Log;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +25,6 @@ import java.util.Map;
  * I.e: a match
  */
 @Log
-@Data
 public class GameInstance {
 
     /**
@@ -27,7 +35,7 @@ public class GameInstance {
     /**
      * The current stage this game is in.
      */
-    private Stage stage = Stage.LOBBY;
+    private Stage stage;
 
     /**
      * The arena this game takes place.
@@ -35,14 +43,19 @@ public class GameInstance {
     private Arena arena;
 
     /**
+     * The lobby the players will be taken after finishing the game.
+     */
+    private Lobby lobby;
+
+    /**
      * Map of players and their role.
      */
-    private Map<Player, Role> playerRoles;
+    private final Map<Player, Role> playerRoles = new HashMap<>();
 
     /**
      * Current players.
      */
-    private List<Player> players = new ArrayList<>();
+    private final List<Player> players = new ArrayList<>();
 
     /**
      * Initialize the roles for the current players.
@@ -75,23 +88,84 @@ public class GameInstance {
         log.config("Removed player " + player.getName() + " to game instance " +  this.getIdentifier());
     }
 
-    /**
-     * Increment this instance's stage to the next one.
-     */
-    public void nextStage() {
-        switch (this.getStage()) {
-            case LOBBY -> {
-                log.config("Finished Lobby phase");
-            }
-            case GRACE_PERIOD -> {
-                log.config("Finished Grace-Period phase");
-            }
-            case RUNNING -> {
-                log.config("Finished Running phase");
-            }
-            case ENDGAME -> {
-                log.config("Finished endgame");
-            }
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public Stage getStage() {
+        return stage;
+    }
+
+    public void setStage(Stage stage) {
+        switch (stage) { //TODO implement logic
+            case LOBBY -> initializeCountdown();
+            case COUNTDOWN -> initializeGracePeriod();
+            case GRACE_PERIOD -> System.out.println("Grace-Period complete");
+            case RUNNING -> System.out.println("Running complete");
+            case ENDGAME -> System.out.println("Endgame complete");
         }
+        this.stage = stage;
+    }
+
+    private void initializeCountdown() {
+        // Teleport players to their spawns
+        log.info("Initializing COUNTDOWN stage");
+        for(int i=0; i<this.players.size(); i++) {
+            Player player = this.players.get(i);
+            PlayerSpawn spawn = this.getArena().getPlayerSpawns().get(i);
+
+            World world = Bukkit.getWorld(spawn.getWorldName());
+            Location location = new Location(world, spawn.getX(), spawn.getY(), spawn.getZ(), spawn.getYaw(), spawn.getPitch());
+
+            player.teleport(location);
+            player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
+        }
+
+        //TODO disable player move
+
+        // Start the countdown
+        BukkitRunnable countdown = new BukkitRunnable() {
+            private int timer = 30;
+
+            @Override
+            public void run() {
+                if(timer <= 0) {
+                    this.cancel();
+                }
+                PlayerMessage.info("Match is starting in " + timer + "s", players);
+                if(timer <= 10) {
+                    players.forEach(player -> player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f));
+                }
+                timer--;
+            }
+        };
+        countdown.runTaskTimer(TTTPlugin.getInstance(), 0, 20); // 20 ticks = 1 second
+        this.setStage(Stage.COUNTDOWN);
+    }
+
+    private void initializeGracePeriod() {
+        log.info("Initialize GRACE_PERIOD stage");
+        // TODO Enable player move
+        // TODO Disable pvp
+    }
+
+    public Lobby getLobby() {
+        return lobby;
+    }
+
+    public void setLobby(Lobby lobby) {
+        this.lobby = lobby;
+    }
+
+    public Arena getArena() {
+        return arena;
+    }
+
+    public void setArena(Arena arena) {
+        this.arena = arena;
     }
 }
