@@ -13,3 +13,6 @@ commands:
   lobby:
     description: Manage waiting lobbies
     permission:  ttt.lobby
+  gm:
+    description: GameManager command to manage game instances
+    permission: ttt.gm

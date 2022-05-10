@@ -11,6 +11,7 @@ import lombok.extern.java.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -40,7 +41,7 @@ public class ArenaServiceImpl implements ArenaService {
         Arena arena = getArenaSafe(name);
         log.info("Adding chest spawn:" + chestSpawn + " to arena: " + name);
 
-        Collection<ChestSpawn> chestSpawns = arena.getChestSpawns();
+        List<ChestSpawn> chestSpawns = arena.getChestSpawns();
         chestSpawns.add(chestSpawn);
         arena.setChestSpawns(chestSpawns);
         arenaRepository.edit(arena);
@@ -51,7 +52,7 @@ public class ArenaServiceImpl implements ArenaService {
         Arena arena = getArenaSafe(name);
         log.info("Adding player spawn:" + playerSpawn + " to arena: " + name);
 
-        Collection<PlayerSpawn> playerSpawns = arena.getPlayerSpawns();
+        List<PlayerSpawn> playerSpawns = arena.getPlayerSpawns();
         playerSpawns.add(playerSpawn);
         arena.setPlayerSpawns(playerSpawns);
         arenaRepository.edit(arena);

@@ -5,10 +5,12 @@ import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import org.bukkit.entity.Player;
 
+import java.util.Collection;
+
 /**
  * Service interface to manage all running game instances.
  */
-public interface GameMasterService {
+public interface GameManagerService {
 
     /**
      * Create a new game instance for the following lobby.
@@ -18,12 +20,13 @@ public interface GameMasterService {
     GameInstance newInstance(Lobby lobby);
 
     /**
-     * Get the instance of this identifier.
+     * Null-safe way to get a game instance by its identifier.
      * @param identifier the identifier of the requested game instance
-     * @return the requested game instance or {@code null} if no game instance exists for this identifier
-     * @throws IllegalStateException if more than one game instance with that identifier is found
+     * @return the requested game instance. Never null
+     * @throws IllegalArgumentException if the instance is not found
+     * @throws IllegalStateException if more than one instance is found
      */
-    GameInstance getGameInstance(String identifier);
+    GameInstance getGameInstanceSafe(String identifier) throws IllegalArgumentException, IllegalStateException;
 
     /**
      * Get a players instance.
@@ -66,8 +69,8 @@ public interface GameMasterService {
     void end(String identifier);
 
     /**
-     * Forcefully stop a game instance.
-     * @param identifier of the instance to stop
+     * List all instances.
+     * @return all instances
      */
-    void stop(String identifier);
+    Collection<GameInstance> list();
 }

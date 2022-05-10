@@ -2,7 +2,7 @@ package de.flowwindustries.flowwttt.listener;
 
 import de.flowwindustries.flowwttt.domain.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
-import de.flowwindustries.flowwttt.services.GameMasterService;
+import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,7 +11,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 @RequiredArgsConstructor
 public class PlayerMoveListener implements Listener {
 
-    private final GameMasterService gameMasterService;
+    private final GameManagerService gameManagerService;
 
     /**
      * Block movement of players when they are in a valid game instance and the stage is {@link Stage#COUNTDOWN}.
@@ -19,12 +19,13 @@ public class PlayerMoveListener implements Listener {
      */
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        GameInstance instance = gameMasterService.getInstanceOf(event.getPlayer());
+        GameInstance instance = gameManagerService.getInstanceOf(event.getPlayer());
         if(instance == null) {
             return;
         }
-        if(instance.getStage() == Stage.COUNTDOWN) {
-            event.setCancelled(true);
+        if(instance.getStage() != Stage.COUNTDOWN) {
+            return;
         }
+        event.setCancelled(true);
     }
 }

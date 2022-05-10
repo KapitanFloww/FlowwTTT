@@ -4,10 +4,12 @@ import de.flowwindustries.flowwttt.domain.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
-import de.flowwindustries.flowwttt.services.GameMasterService;
+import de.flowwindustries.flowwttt.services.GameManagerService;
+import lombok.extern.java.Log;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +17,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Service implementation of {@link GameMasterService}.
+ * Service implementation of {@link GameManagerService}.
  */
-public class GameMasterServiceImpl implements GameMasterService {
+@Log
+public class GameManagerServiceImpl implements GameManagerService {
 
     private static final List<GameInstance> instances = new ArrayList<>();
     private static final Map<Player, String> playerInstanceMap = new HashMap<>();
@@ -29,35 +32,20 @@ public class GameMasterServiceImpl implements GameMasterService {
         gameInstance.setLobby(lobby);
         gameInstance.setStage(Stage.LOBBY);
         instances.add(gameInstance);
+        log.info("Created new game instance with id: " + gameInstance.getIdentifier());
         return gameInstance;
     }
 
     @Override
-    public GameInstance getGameInstance(String identifier) {
-        List<GameInstance> instanceList = instances.stream()
-                .filter(gameInstance -> gameInstance.getIdentifier().equalsIgnoreCase(identifier))
-                .toList();
-        if(instanceList.size() == 0) {
-            return null;
-        }
-        if(instanceList.size() > 1) {
-            throw new IllegalStateException("Found too many instances with that name");
-        }
-        return instanceList.get(0);
-    }
-
-    @Override
     public GameInstance getInstanceOf(Player player) {
-        try {
-            return getGameInstanceSafe(playerInstanceMap.get(player));
-        } catch (IllegalArgumentException ex) {
-            return null;
-        }
+        log.config("Request to get instance of player: " + player.getName());
+        return getGameInstance(playerInstanceMap.get(player));
     }
 
 
     @Override
     public void start(String identifier, Arena arena) {
+        log.info("Request to start instance: " + identifier + " in arena: " + arena.getArenaName());
         GameInstance instance = getGameInstanceSafe(identifier);
         instance.setArena(arena);
         instance.setStage(Stage.COUNTDOWN);
@@ -65,6 +53,7 @@ public class GameMasterServiceImpl implements GameMasterService {
 
     @Override
     public void addPlayer(String identifier, Player player) {
+        log.info("Adding player " + player.getName() + " to instance: " + identifier);
         GameInstance instance = getGameInstanceSafe(identifier);
         instance.addPlayer(player);
         playerInstanceMap.put(player, instance.getIdentifier());
@@ -72,6 +61,7 @@ public class GameMasterServiceImpl implements GameMasterService {
 
     @Override
     public void deletePlayer(String identifier, Player player) {
+        log.info("Removing player " + player.getName() + " from instance: " + identifier);
         GameInstance instance = getGameInstanceSafe(identifier);
         instance.removePlayer(player);
         playerInstanceMap.remove(player);
@@ -79,6 +69,7 @@ public class GameMasterServiceImpl implements GameMasterService {
 
     @Override
     public void nextStage(String identifier) {
+        log.info("Triggering next stage of instance: " + identifier);
         GameInstance instance = getGameInstanceSafe(identifier);
         Stage currentStage = instance.getStage();
         switch (currentStage) {
@@ -96,19 +87,28 @@ public class GameMasterServiceImpl implements GameMasterService {
     }
 
     @Override
-    public void stop(String identifier) {
-        //TODO #2 implement stop
+    public Collection<GameInstance> list() {
+        log.info("Request to list all instances");
+        return instances;
     }
 
-    private GameInstance getGameInstanceSafe(String identifier) {
-        Optional<GameInstance> optionalGameInstance = instances.stream()
+    @Override
+    public GameInstance getGameInstanceSafe(String identifier) {
+        log.config("Request to get instance with identifier: " + identifier);
+        return Optional.ofNullable(getGameInstance(identifier))
+                .orElseThrow(() -> new IllegalArgumentException("No game instance found for identifier: " + identifier));
+    }
+
+    private GameInstance getGameInstance(String identifier) {
+        List<GameInstance> instanceList = instances.stream()
                 .filter(instance -> instance.getIdentifier().equalsIgnoreCase(identifier))
-                .findFirst();
-
-        if(optionalGameInstance.isEmpty()) {
-            throw new IllegalArgumentException("Game instance " + identifier + " does not exist");
+                .toList();
+        if(instanceList.isEmpty()) {
+            return null;
         }
-
-        return optionalGameInstance.get();
+        if(instanceList.size() > 1) {
+            throw new IllegalStateException("More than one instance with identifier " + identifier + " found");
+        }
+        return instanceList.get(0);
     }
 }

@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -28,6 +29,15 @@ public class PlayerMessage {
      */
     public static void info(String message, List<Player> players) {
         sendMessageIntern(ChatColor.YELLOW, message, players);
+    }
+
+    /**
+     * Send an {@code INFO} ({@link ChatColor#YELLOW}) message to a player.
+     * @param message the message to send
+     * @param players the players to send the message to
+     */
+    public static void info(String message, Collection<Player> players) {
+        sendMessageIntern(ChatColor.YELLOW, message, players.stream().toList());
     }
 
     /**

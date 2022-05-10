@@ -112,7 +112,8 @@ public class LobbyServiceImpl implements LobbyService {
         lobbyRepository.remove(lobby);
     }
 
-    private Lobby getLobbySafe(String lobbyName) {
+    @Override
+    public Lobby getLobbySafe(String lobbyName) {
         log.info("Request to get lobby: " + lobbyName);
         return lobbyRepository.find(lobbyName)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(LOBBY_NOT_FOUND, lobbyName)));
