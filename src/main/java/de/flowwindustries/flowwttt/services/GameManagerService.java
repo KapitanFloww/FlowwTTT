@@ -1,6 +1,7 @@
 package de.flowwindustries.flowwttt.services;
 
 import de.flowwindustries.flowwttt.domain.GameInstance;
+import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import org.bukkit.entity.Player;
@@ -59,8 +60,10 @@ public interface GameManagerService {
     /**
      * Go to the next stage of the match.
      * @param identifier of the instance to change
+     * @return the updated stage of this instance
+     * @throws IllegalStateException if this instance's stage is invalid
      */
-    void nextStage(String identifier);
+    Stage nextStage(String identifier) throws IllegalStateException ;
 
     /**
      * End a game instance (the normal way).

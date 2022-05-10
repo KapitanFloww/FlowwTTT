@@ -68,16 +68,32 @@ public class GameManagerServiceImpl implements GameManagerService {
     }
 
     @Override
-    public void nextStage(String identifier) {
+    public Stage nextStage(String identifier) throws IllegalStateException {
         log.info("Triggering next stage of instance: " + identifier);
         GameInstance instance = getGameInstanceSafe(identifier);
         Stage currentStage = instance.getStage();
         switch (currentStage) {
-            case LOBBY -> instance.setStage(Stage.COUNTDOWN);
-            case COUNTDOWN -> instance.setStage(Stage.GRACE_PERIOD);
-            case GRACE_PERIOD -> instance.setStage(Stage.RUNNING);
-            case RUNNING -> instance.setStage(Stage.ENDGAME);
-            case ENDGAME -> instance.setStage(Stage.LOBBY);
+            case LOBBY -> {
+                instance.setStage(Stage.COUNTDOWN);
+                return Stage.COUNTDOWN;
+            }
+            case COUNTDOWN -> {
+                instance.setStage(Stage.GRACE_PERIOD);
+                return Stage.GRACE_PERIOD;
+            }
+            case GRACE_PERIOD -> {
+                instance.setStage(Stage.RUNNING);
+                return Stage.GRACE_PERIOD;
+            }
+            case RUNNING -> {
+                instance.setStage(Stage.ENDGAME);
+                return Stage.RUNNING;
+            }
+            case ENDGAME -> {
+                instance.setStage(Stage.LOBBY);
+                return Stage.LOBBY;
+            }
+            default -> throw new IllegalStateException("Instance is in invalid stage");
         }
     }
 

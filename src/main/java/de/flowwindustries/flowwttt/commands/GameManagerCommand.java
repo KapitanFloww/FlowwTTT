@@ -1,6 +1,7 @@
 package de.flowwindustries.flowwttt.commands;
 
 import de.flowwindustries.flowwttt.domain.GameInstance;
+import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.exceptions.InvalidArgumentException;
@@ -49,6 +50,7 @@ public class GameManagerCommand extends AbstractCommand {
                     case "info" -> infoInstance(player, args[1]);
                     case "create" -> createInstance(player, args[1]);
                     case "stop" -> stopInstance(player, args[1]);
+                    case "nextstage" -> nextStageInstance(player, args[1]);
                     default -> throw new InvalidArgumentException(player, String.format(INVALID_ARGUMENTS, args[0]));
                 }
             }
@@ -56,8 +58,8 @@ public class GameManagerCommand extends AbstractCommand {
 
                 switch (args[0]) {
                     case "start" -> startInstance(args[1], args[2]);
-                    case "addplayer" -> addPlayer(args[1], args[2]);
-                    case "removeplayer" -> removePlayer(args[1], args[2]);
+                    case "addplayer" -> addPlayer(player, args[1], args[2]);
+                    case "removeplayer" -> removePlayer(player, args[1], args[2]);
                     default -> throw new InvalidArgumentException(player, String.format(INVALID_ARGUMENTS, args[0]));
                 }
             }
@@ -66,20 +68,27 @@ public class GameManagerCommand extends AbstractCommand {
         return true;
     }
 
-    private void removePlayer(String instanceId, String playerName) {
-        Player player = Bukkit.getPlayer(playerName);
-        if(player == null) {
-            throw new IllegalArgumentException("Player " + playerName + " not found");
-        }
-        gameManagerService.deletePlayer(instanceId, player);
+    private void nextStageInstance(Player player, String instanceId) {
+        Stage stage = gameManagerService.nextStage(instanceId);
+        PlayerMessage.success("Changed stage of instance to " + stage.toString(), player);
     }
 
-    private void addPlayer(String instanceId, String playerName) {
-        Player player = Bukkit.getPlayer(playerName);
-        if(player == null) {
+    private void removePlayer(Player player, String instanceId, String playerName) {
+        Player target = Bukkit.getPlayer(playerName);
+        if(target == null) {
             throw new IllegalArgumentException("Player " + playerName + " not found");
         }
-        gameManagerService.addPlayer(instanceId, player);
+        gameManagerService.deletePlayer(instanceId, target);
+        PlayerMessage.success("Removed player " + target.getName() + " from this instance", player);
+    }
+
+    private void addPlayer(Player player, String instanceId, String playerName) {
+        Player target = Bukkit.getPlayer(playerName);
+        if(target == null) {
+            throw new IllegalArgumentException("Player " + playerName + " not found");
+        }
+        gameManagerService.addPlayer(instanceId, target);
+        PlayerMessage.success("Added player " + playerName + " to this instance", player);
     }
 
     private void stopInstance(Player player, String instanceId) {
@@ -129,6 +138,7 @@ public class GameManagerCommand extends AbstractCommand {
         player.sendMessage(GOLD+ "/gm help " + ChatColor.GRAY + ": " + YELLOW + " Show this help");
         player.sendMessage(GOLD+ "/gm list " + ChatColor.GRAY + ": " + YELLOW + " List all instances");
         player.sendMessage(GOLD+ "/gm info <id> " + ChatColor.GRAY + ": " + YELLOW + " Display instance details");
+        player.sendMessage(GOLD+ "/gm nextstage <id> " + ChatColor.GRAY + ": " + YELLOW + " Trigger the next stage of this instance");
         player.sendMessage(GOLD+ "/gm create <lobby> " + ChatColor.GRAY + ": " + YELLOW + " Create a new instance from lobby");
         player.sendMessage(GOLD+ "/gm start <id> <arena> " + ChatColor.GRAY + ": " + YELLOW + " Start instance with an arena");
         player.sendMessage(GOLD+ "/gm addplayer <id> <player> " + ChatColor.GRAY + ": " + YELLOW + " Add a player to this instance");
