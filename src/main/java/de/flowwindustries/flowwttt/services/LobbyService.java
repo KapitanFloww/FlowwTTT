@@ -23,6 +23,14 @@ public interface LobbyService {
     Collection<Lobby> getAll();
 
     /**
+     * Null-safe way to get a lobby by its name.
+     * @param name the lobby name
+     * @return the {@link Lobby}. Never null
+     * @throws IllegalArgumentException when the lobby cannot be found
+     */
+    Lobby getLobbySafe(String name) throws IllegalArgumentException;
+
+    /**
      * Set this lobby as fallback / default lobby.
      * @param lobbyName the unique lobby name
      */

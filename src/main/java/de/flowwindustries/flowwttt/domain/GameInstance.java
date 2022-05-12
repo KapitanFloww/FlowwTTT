@@ -7,6 +7,9 @@ import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
+import de.flowwindustries.flowwttt.scheduled.Countdown;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -14,9 +17,10 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -30,21 +34,28 @@ public class GameInstance {
     /**
      * This game's identifier.
      */
+    @Getter
+    @Setter
     private String identifier;
 
     /**
      * The current stage this game is in.
      */
+    @Getter
     private Stage stage;
 
     /**
      * The arena this game takes place.
      */
+    @Setter
+    @Getter
     private Arena arena;
 
     /**
      * The lobby the players will be taken after finishing the game.
      */
+    @Setter
+    @Getter
     private Lobby lobby;
 
     /**
@@ -64,7 +75,7 @@ public class GameInstance {
         int playerSize = players.size();
         log.config("Assigning roles for " + playerSize + " players");
 
-        // TODO: Assign roles
+        // TODO #4: Assign roles
         // Call RoleService and fetch the map of roles and players
         // 10% Detective
         // 60% Innocent
@@ -89,32 +100,32 @@ public class GameInstance {
         log.config("Removed player " + player.getName() + " to game instance " +  this.getIdentifier());
     }
 
-    public String getIdentifier() {
-        return identifier;
+    /**
+     * Get the current player count of this instance.
+     * @return the current player count
+     */
+    public Collection<Player> getCurrentPlayers() {
+        return this.players;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }
-
-    public Stage getStage() {
-        return stage;
-    }
-
+    /**
+     * Set the stage of this game instance.
+     * @param stage the stage to set this instance to
+     */
     public void setStage(Stage stage) {
-        switch (stage) { //TODO implement logic
-            case LOBBY -> initializeCountdown();
-            case COUNTDOWN -> initializeGracePeriod();
-            case GRACE_PERIOD -> System.out.println("Grace-Period complete");
-            case RUNNING -> System.out.println("Running complete");
-            case ENDGAME -> System.out.println("Endgame complete");
-        }
         this.stage = stage;
+        switch (stage) { //TODO #2 implement logic
+            case LOBBY -> System.out.println("Returning to lobby"); // Return to lobby and quit the instance
+            case COUNTDOWN -> initializeCountdown();
+            case GRACE_PERIOD -> initializeGracePeriod();
+            case RUNNING -> System.out.println("Running complete"); // Disable grace period, keep track of the players
+            case ENDGAME -> System.out.println("Endgame complete"); // 10s countdown to display the results and winner
+        }
     }
 
     private void initializeCountdown() {
         // Teleport players to their spawns
-        log.info("Initializing COUNTDOWN stage");
+        log.info(String.format("Initializing %s stage", Stage.COUNTDOWN));
         for(int i=0; i<this.players.size(); i++) {
             Player player = this.players.get(i);
             PlayerSpawn spawn = this.getArena().getPlayerSpawns().get(i);
@@ -125,48 +136,29 @@ public class GameInstance {
             player.teleport(location);
             player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
         }
-
-        //TODO disable player move
-
-        // Start the countdown
-        BukkitRunnable countdown = new BukkitRunnable() {
-            private int timer = 30;
-
-            @Override
-            public void run() {
-                if(timer <= 0) {
-                    this.cancel();
-                }
-                PlayerMessage.info("Match is starting in " + timer + "s", players);
-                if(timer <= 10) {
-                    players.forEach(player -> player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f));
-                }
-                timer--;
-            }
-        };
-        countdown.runTaskTimer(TTTPlugin.getInstance(), 0, 20); // 20 ticks = 1 second
-        this.setStage(Stage.COUNTDOWN);
+        // Count down from 30s
+        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                30,
+                () -> PlayerMessage.info("The match will start soon! Get ready!", getCurrentPlayers()),
+                () -> {
+                    PlayerMessage.info("The match has started!", getCurrentPlayers());
+                    this.setStage(Stage.GRACE_PERIOD);
+                },
+                t -> PlayerMessage.info("Match will start in " + t.getTimeLeft() + " seconds", getCurrentPlayers()));
+        countdown.scheduleCountdown();
     }
 
     private void initializeGracePeriod() {
-        log.info("Initialize GRACE_PERIOD stage");
-        // TODO Enable player move
-        // TODO Disable pvp
-    }
-
-    public Lobby getLobby() {
-        return lobby;
-    }
-
-    public void setLobby(Lobby lobby) {
-        this.lobby = lobby;
-    }
-
-    public Arena getArena() {
-        return arena;
-    }
-
-    public void setArena(Arena arena) {
-        this.arena = arena;
+        log.info(String.format("Initialize %s stage", Stage.GRACE_PERIOD));
+        // Count down from 30s
+        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                30,
+                () -> PlayerMessage.info("Grace Period has started!", getCurrentPlayers()),
+                () -> {
+                    PlayerMessage.info("Grace Period has ended!", getCurrentPlayers());
+                    this.setStage(Stage.RUNNING);
+                },
+                t -> PlayerMessage.info("Grace Period ends in " + t.getTimeLeft() + " seconds", getCurrentPlayers()));
+        countdown.scheduleCountdown();
     }
 }

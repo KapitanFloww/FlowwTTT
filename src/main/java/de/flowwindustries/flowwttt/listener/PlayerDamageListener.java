@@ -4,28 +4,30 @@ import de.flowwindustries.flowwttt.domain.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 @RequiredArgsConstructor
-public class PlayerMoveListener implements Listener {
+public class PlayerDamageListener implements Listener {
 
     private final GameManagerService gameManagerService;
 
     /**
-     * Block movement of players when they are in a valid game instance and the stage is {@link Stage#COUNTDOWN}.
+     * Block damage of players when they are in a valid game instance and the stage is {@link Stage#COUNTDOWN}.
      * @param event the event to handle
      */
     @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event) {
+    public void onPlayerDamager(PlayerInteractEntityEvent event) {
         GameInstance instance = gameManagerService.getInstanceOf(event.getPlayer());
         if(instance == null) {
             return;
         }
-        if(instance.getStage() != Stage.COUNTDOWN) {
-            return;
+        if(instance.getStage() == Stage.GRACE_PERIOD) {
+            if(event.getRightClicked() instanceof Player) {
+                event.setCancelled(true);
+            }
         }
-        event.setCancelled(true);
     }
 }

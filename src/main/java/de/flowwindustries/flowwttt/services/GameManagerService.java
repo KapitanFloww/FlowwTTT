@@ -1,14 +1,17 @@
 package de.flowwindustries.flowwttt.services;
 
 import de.flowwindustries.flowwttt.domain.GameInstance;
+import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import org.bukkit.entity.Player;
 
+import java.util.Collection;
+
 /**
  * Service interface to manage all running game instances.
  */
-public interface GameMasterService {
+public interface GameManagerService {
 
     /**
      * Create a new game instance for the following lobby.
@@ -18,16 +21,18 @@ public interface GameMasterService {
     GameInstance newInstance(Lobby lobby);
 
     /**
-     * Get the instance of this identifier.
+     * Null-safe way to get a game instance by its identifier.
      * @param identifier the identifier of the requested game instance
-     * @return the requested game instance
+     * @return the requested game instance. Never null
+     * @throws IllegalArgumentException if the instance is not found
+     * @throws IllegalStateException if more than one instance is found
      */
-    GameInstance getGameInstance(String identifier);
+    GameInstance getGameInstanceSafe(String identifier) throws IllegalArgumentException, IllegalStateException;
 
     /**
      * Get a players instance.
      * @param player the player to get the instance from.
-     * @return the game instance
+     * @return the game instance of {@code null} if the player is not accoiated to an instance
      */
     GameInstance getInstanceOf(Player player);
 
@@ -55,8 +60,10 @@ public interface GameMasterService {
     /**
      * Go to the next stage of the match.
      * @param identifier of the instance to change
+     * @return the updated stage of this instance
+     * @throws IllegalStateException if this instance's stage is invalid
      */
-    void nextStage(String identifier);
+    Stage nextStage(String identifier) throws IllegalStateException ;
 
     /**
      * End a game instance (the normal way).
@@ -65,8 +72,8 @@ public interface GameMasterService {
     void end(String identifier);
 
     /**
-     * Forcefully stop a game instance.
-     * @param identifier of the instance to stop
+     * List all instances.
+     * @return all instances
      */
-    void stop(String identifier);
+    Collection<GameInstance> list();
 }

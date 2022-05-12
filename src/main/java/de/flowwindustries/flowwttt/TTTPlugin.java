@@ -1,6 +1,7 @@
 package de.flowwindustries.flowwttt;
 
 import de.flowwindustries.flowwttt.commands.ArenaCommand;
+import de.flowwindustries.flowwttt.commands.GameManagerCommand;
 import de.flowwindustries.flowwttt.commands.LobbyCommand;
 import de.flowwindustries.flowwttt.config.DefaultConfiguration;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
@@ -9,10 +10,10 @@ import de.flowwindustries.flowwttt.listener.PlayerMoveListener;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
 import de.flowwindustries.flowwttt.repository.LobbyRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
-import de.flowwindustries.flowwttt.services.GameMasterService;
+import de.flowwindustries.flowwttt.services.GameManagerService;
 import de.flowwindustries.flowwttt.services.LobbyService;
 import de.flowwindustries.flowwttt.services.impl.ArenaServiceImpl;
-import de.flowwindustries.flowwttt.services.impl.GameMasterServiceImpl;
+import de.flowwindustries.flowwttt.services.impl.GameManagerServiceImpl;
 import de.flowwindustries.flowwttt.services.impl.LobbyServiceImpl;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -36,7 +37,7 @@ public final class TTTPlugin extends JavaPlugin {
     // Services
     private ArenaService arenaService;
     private LobbyService lobbyService;
-    private GameMasterService gameMasterService;
+    private GameManagerService gameManagerService;
 
     @Override
     public void onEnable() {
@@ -61,16 +62,17 @@ public final class TTTPlugin extends JavaPlugin {
         this.arenaService = new ArenaServiceImpl(arenaRepository);
         LobbyRepository lobbyRepository = new LobbyRepository(Lobby.class);
         this.lobbyService = new LobbyServiceImpl(lobbyRepository, arenaService);
-        this.gameMasterService = new GameMasterServiceImpl();
+        this.gameManagerService = new GameManagerServiceImpl();
     }
 
     private void setupCommands() {
         this.getCommand("arena").setExecutor(new ArenaCommand("ttt.arena", arenaService));
         this.getCommand("lobby").setExecutor(new LobbyCommand("ttt.lobby", lobbyService));
+        this.getCommand("gm").setExecutor(new GameManagerCommand("ttt.gm", arenaService, lobbyService, gameManagerService));
     }
 
     private void setupListener() {
         PluginManager pluginManager = Bukkit.getPluginManager();
-        pluginManager.registerEvents(new PlayerMoveListener(this.gameMasterService), this);
+        pluginManager.registerEvents(new PlayerMoveListener(this.gameManagerService), this);
     }
 }
