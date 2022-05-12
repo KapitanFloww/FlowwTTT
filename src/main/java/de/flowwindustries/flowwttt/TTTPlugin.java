@@ -10,9 +10,11 @@ import de.flowwindustries.flowwttt.listener.PlayerMoveListener;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
 import de.flowwindustries.flowwttt.repository.LobbyRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
+import de.flowwindustries.flowwttt.services.ChestService;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import de.flowwindustries.flowwttt.services.LobbyService;
 import de.flowwindustries.flowwttt.services.impl.ArenaServiceImpl;
+import de.flowwindustries.flowwttt.services.impl.ChestServiceImpl;
 import de.flowwindustries.flowwttt.services.impl.GameManagerServiceImpl;
 import de.flowwindustries.flowwttt.services.impl.LobbyServiceImpl;
 import lombok.Getter;
@@ -58,11 +60,13 @@ public final class TTTPlugin extends JavaPlugin {
     }
 
     private void setupServices() {
+        // Services
+        ChestService chestService = new ChestServiceImpl();
         ArenaRepository arenaRepository = new ArenaRepository(Arena.class);
         this.arenaService = new ArenaServiceImpl(arenaRepository);
         LobbyRepository lobbyRepository = new LobbyRepository(Lobby.class);
         this.lobbyService = new LobbyServiceImpl(lobbyRepository, arenaService);
-        this.gameManagerService = new GameManagerServiceImpl();
+        this.gameManagerService = new GameManagerServiceImpl(chestService);
     }
 
     private void setupCommands() {

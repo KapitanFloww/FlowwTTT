@@ -5,17 +5,15 @@ import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
 import de.flowwindustries.flowwttt.exceptions.InvalidArgumentException;
 import de.flowwindustries.flowwttt.services.LobbyService;
 import lombok.extern.java.Log;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.Optional;
-
 import static de.flowwindustries.flowwttt.TTTPlugin.COORDINATE_FORMATTER;
 import static de.flowwindustries.flowwttt.commands.ArenaCommand.UNKNOWN_ARG_0;
+import static de.flowwindustries.flowwttt.utils.WorldParser.getWorldSafe;
 import static org.bukkit.ChatColor.GOLD;
 import static org.bukkit.ChatColor.YELLOW;
 
@@ -164,9 +162,5 @@ public class LobbyCommand extends AbstractCommand {
         player.sendMessage(GOLD+ "/lobby addarena <name> <arena>" + ChatColor.GRAY + ": " + YELLOW + " Add arena to lobby");
         player.sendMessage(GOLD+ "/lobby removearena <name> <arena>" + ChatColor.GRAY + ": " + YELLOW + " Remove arena from lobby");
         player.sendMessage(ChatColor.GRAY + "----------------------------------------------------");
-    }
-
-    private World getWorldSafe(String name) {
-        return Optional.ofNullable(Bukkit.getWorld(name)).orElseThrow(() -> new IllegalArgumentException("World does not exist: " + name));
     }
 }

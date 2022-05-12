@@ -8,6 +8,7 @@ import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
 import de.flowwindustries.flowwttt.scheduled.Countdown;
+import de.flowwindustries.flowwttt.services.ChestService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -69,6 +70,15 @@ public class GameInstance {
     private final List<Player> players = new ArrayList<>();
 
     /**
+     * Chest Service.
+     */
+    private final ChestService chestService;
+
+    public GameInstance(ChestService chestService) {
+        this.chestService = chestService;
+    }
+
+    /**
      * Initialize the roles for the current players.
      */
     public void initializeRoles() {
@@ -118,7 +128,7 @@ public class GameInstance {
             case LOBBY -> System.out.println("Returning to lobby"); // Return to lobby and quit the instance
             case COUNTDOWN -> initializeCountdown();
             case GRACE_PERIOD -> initializeGracePeriod();
-            case RUNNING -> System.out.println("Running complete"); // Disable grace period, keep track of the players
+            case RUNNING -> chestService.deSpawnChests(this.getArena()); // Disable grace period, keep track of the players
             case ENDGAME -> System.out.println("Endgame complete"); // 10s countdown to display the results and winner
         }
     }
@@ -146,6 +156,7 @@ public class GameInstance {
                 },
                 t -> PlayerMessage.info("Match will start in " + t.getTimeLeft() + " seconds", getCurrentPlayers()));
         countdown.scheduleCountdown();
+        chestService.spawnChests(this.getArena());
     }
 
     private void initializeGracePeriod() {
