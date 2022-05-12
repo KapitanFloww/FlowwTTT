@@ -4,10 +4,13 @@ import de.flowwindustries.flowwttt.domain.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
+import de.flowwindustries.flowwttt.services.ChestService;
 import de.flowwindustries.flowwttt.services.GameManagerService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.bukkit.entity.Player;
 
+import javax.swing.text.html.CSS;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,14 +23,16 @@ import java.util.UUID;
  * Service implementation of {@link GameManagerService}.
  */
 @Log
+@RequiredArgsConstructor
 public class GameManagerServiceImpl implements GameManagerService {
 
     private static final List<GameInstance> instances = new ArrayList<>();
     private static final Map<Player, String> playerInstanceMap = new HashMap<>();
+    private final ChestService chestService;
 
     @Override
     public GameInstance newInstance(Lobby lobby) {
-        GameInstance gameInstance = new GameInstance();
+        GameInstance gameInstance = new GameInstance(chestService);
         gameInstance.setIdentifier(UUID.randomUUID().toString());
         gameInstance.setLobby(lobby);
         gameInstance.setStage(Stage.LOBBY);
