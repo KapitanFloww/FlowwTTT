@@ -50,12 +50,30 @@ public class PlayerMessage {
     }
 
     /**
+     * Send an {@code SUCCESS} ({@link ChatColor#GREEN}) message to a player.
+     * @param message the message to send
+     * @param players the players to send the message to
+     */
+    public static void success(String message, Collection<Player> players) {
+        sendMessageIntern(ChatColor.GREEN, message, players.stream().toList());
+    }
+
+    /**
      * Send an {@code WARN} ({@link ChatColor#RED}) message to a player.
      * @param message the message to send
      * @param players the players to send the message to
      */
     public static void warn(String message, Player... players) {
         sendMessageIntern(ChatColor.RED, message, List.of(players));
+    }
+
+    /**
+     * Send an {@code WARN} ({@link ChatColor#RED}) message to a player.
+     * @param message the message to send
+     * @param players the players to send the message to
+     */
+    public static void warn(String message, Collection<Player> players) {
+        sendMessageIntern(ChatColor.RED, message, players.stream().toList());
     }
 
     /**

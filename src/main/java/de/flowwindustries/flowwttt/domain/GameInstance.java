@@ -15,10 +15,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_MAX_DURATION;
+import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
 
 /**
  * A game instance.
@@ -139,7 +142,7 @@ public class GameInstance {
             case COUNTDOWN -> initializeCountdown();
             case GRACE_PERIOD -> initializeGracePeriod();
             case RUNNING -> initializeRunning(); // Disable grace period, keep track of the players
-            case ENDGAME -> System.out.println("Endgame complete"); // 10s countdown to display the results and winner, remove chests, teleport players
+            case ENDGAME -> initializeEndgame(); // 10s countdown to display the results and winner, remove chests, teleport players
         }
     }
 
@@ -206,5 +209,34 @@ public class GameInstance {
 
         // When all killer dead == inno win or by time
         // When all inno dead = traitor win
+    }
+
+    private void initializeEndgame() {
+        this.chestService.deSpawnChests(this.getArena());
+        GameResult result = this.getGameResult();
+
+        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                10,
+                () -> PlayerMessage.success("*********************************", this.getCurrentPlayers()),
+                () -> {
+                    // TODO set karma
+                    this.setStage(Stage.LOBBY);
+                    this.getCurrentPlayers().forEach(player -> {
+                        Location lobbyLocation = mapSpawnToLocation(this.getLobby().getLobbySpawn());
+                        player.teleport(lobbyLocation);
+                        player.setHealth(20);
+                        player.getInventory().clear();
+                        player.setGameMode(GameMode.ADVENTURE);
+                    });
+                },
+                t -> {
+                    if(result == GameResult.INNOCENT_WIN || result == GameResult.TIME_OUT) {
+                        PlayerMessage.success("The INNOCENTS win", this.getCurrentPlayers());
+                    } else {
+                        PlayerMessage.warn("The TRAITORS win", this.getCurrentPlayers());
+                    }
+                }
+        );
+        countdown.scheduleCountdown();
     }
 }
