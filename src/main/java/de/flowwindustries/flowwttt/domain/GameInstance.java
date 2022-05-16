@@ -2,6 +2,8 @@ package de.flowwindustries.flowwttt.domain;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.commands.PlayerMessage;
+import de.flowwindustries.flowwttt.config.ConfigurationUtils;
+import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
@@ -17,13 +19,13 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_MAX_DURATION;
 
 /**
  * A game instance.
@@ -32,6 +34,7 @@ import java.util.Map;
 @Log
 public class GameInstance {
 
+    public static final int GAME_DURATION = ConfigurationUtils.read(Integer.class, PATH_GAME_MAX_DURATION);
     /**
      * This game's identifier.
      */
@@ -44,6 +47,13 @@ public class GameInstance {
      */
     @Getter
     private Stage stage;
+
+    /**
+     * The result this game instance has ended.
+     */
+    @Setter
+    @Getter
+    private GameResult gameResult;
 
     /**
      * The arena this game takes place.
@@ -125,11 +135,11 @@ public class GameInstance {
     public void setStage(Stage stage) {
         this.stage = stage;
         switch (stage) { //TODO #2 implement logic
-            case LOBBY -> System.out.println("Returning to lobby"); // Return to lobby and quit the instance
+            case LOBBY -> System.out.println("Returning to lobby"); // Teleport all players to lobby, set gamemode to adventure
             case COUNTDOWN -> initializeCountdown();
             case GRACE_PERIOD -> initializeGracePeriod();
-            case RUNNING -> chestService.deSpawnChests(this.getArena()); // Disable grace period, keep track of the players
-            case ENDGAME -> System.out.println("Endgame complete"); // 10s countdown to display the results and winner
+            case RUNNING -> initializeRunning(); // Disable grace period, keep track of the players
+            case ENDGAME -> System.out.println("Endgame complete"); // 10s countdown to display the results and winner, remove chests, teleport players
         }
     }
 
@@ -171,5 +181,30 @@ public class GameInstance {
                 },
                 t -> PlayerMessage.info("Grace Period ends in " + t.getTimeLeft() + " seconds", getCurrentPlayers()));
         countdown.scheduleCountdown();
+    }
+
+    private void initializeRunning() {
+        log.info(String.format("Initialize %s stage", Stage.RUNNING));
+        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                GAME_DURATION,
+                () -> {},
+                () -> {
+                    PlayerMessage.info("Time has run out. Innocents win!", this.getCurrentPlayers());
+                    this.getCurrentPlayers().forEach(player -> player.setLevel(0));
+                    this.setGameResult(GameResult.TIME_OUT);
+                    this.setStage(Stage.ENDGAME);
+                },
+                t -> this.getCurrentPlayers().forEach(player -> player.setLevel(t.getTimeLeft()))
+        );
+        countdown.scheduleCountdown();
+
+        // Monitor player deaths
+        // When killer traitor and victim innocent or detective == good
+        // When killer traitor and victim traitor == not good
+        // When killer innocent and victim innocent or detective == not good
+        // When killer innocent and victim traitor == very good
+
+        // When all killer dead == inno win or by time
+        // When all inno dead = traitor win
     }
 }

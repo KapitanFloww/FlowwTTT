@@ -10,7 +10,7 @@ import org.bukkit.World;
 
 import java.util.function.Function;
 
-import static de.flowwindustries.flowwttt.utils.WorldParser.getWorldSafe;
+import static de.flowwindustries.flowwttt.utils.SpigotParser.getWorldSafe;
 
 @Log
 public class ChestServiceImpl implements ChestService {

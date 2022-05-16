@@ -6,6 +6,7 @@ import de.flowwindustries.flowwttt.commands.LobbyCommand;
 import de.flowwindustries.flowwttt.config.DefaultConfiguration;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
+import de.flowwindustries.flowwttt.listener.PlayerDamagerListener;
 import de.flowwindustries.flowwttt.listener.PlayerMoveListener;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
 import de.flowwindustries.flowwttt.repository.LobbyRepository;
@@ -78,5 +79,6 @@ public final class TTTPlugin extends JavaPlugin {
     private void setupListener() {
         PluginManager pluginManager = Bukkit.getPluginManager();
         pluginManager.registerEvents(new PlayerMoveListener(this.gameManagerService), this);
+        pluginManager.registerEvents(new PlayerDamagerListener(this.gameManagerService), this);
     }
 }
