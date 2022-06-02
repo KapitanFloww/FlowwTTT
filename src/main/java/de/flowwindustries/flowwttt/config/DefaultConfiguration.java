@@ -18,6 +18,7 @@ public class DefaultConfiguration {
     public static final String PATH_DB_USERNAME = "database.mariadb.username";
     public static final String PATH_DB_PASSWORD = "database.mariadb.password";
     public static final String PATH_DEFAULT_LOBBY = "lobby.default.name";
+    public static final String PATH_GAME_MAX_DURATION = "game.max-duration";
 
     /**
      * Setup default configuration values for the given {@link FileConfiguration}.
@@ -37,6 +38,8 @@ public class DefaultConfiguration {
         configuration.addDefault(PATH_DB_PASSWORD, "password");
 
         configuration.addDefault(PATH_DEFAULT_LOBBY, "Lobby");
+
+        configuration.addDefault(PATH_GAME_MAX_DURATION, 300);
         //Save configuration
         configuration.options().copyDefaults(true);
     }

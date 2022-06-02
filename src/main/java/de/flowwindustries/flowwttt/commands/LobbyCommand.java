@@ -8,12 +8,11 @@ import lombok.extern.java.Log;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import static de.flowwindustries.flowwttt.TTTPlugin.COORDINATE_FORMATTER;
 import static de.flowwindustries.flowwttt.commands.ArenaCommand.UNKNOWN_ARG_0;
-import static de.flowwindustries.flowwttt.utils.WorldParser.getWorldSafe;
+import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
 import static org.bukkit.ChatColor.GOLD;
 import static org.bukkit.ChatColor.YELLOW;
 
@@ -129,13 +128,11 @@ public class LobbyCommand extends AbstractCommand {
         PlayerSpawn lobbySpawn = lobbyService.getLobbySpawn(lobbyName);
         //TODO #3 Check if player is in game instance
         //TODO #3 Remove player form game instance
-        World world = getWorldSafe(lobbySpawn.getWorldName());
-        Location location = new Location(world, lobbySpawn.getX(), lobbySpawn.getY(), lobbySpawn.getZ(), lobbySpawn.getYaw(), lobbySpawn.getPitch());
+        Location location = mapSpawnToLocation(lobbySpawn);
         player.teleport(location);
         player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
         PlayerMessage.success("Teleported back to lobby: " + lobbyName, player);
     }
-
 
     private void removeLobbyArena(Player player, String lobbyName, String arenaName) {
         lobbyService.removeArena(lobbyName, arenaName);
