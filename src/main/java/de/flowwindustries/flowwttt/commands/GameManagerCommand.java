@@ -1,5 +1,6 @@
 package de.flowwindustries.flowwttt.commands;
 
+import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
@@ -42,6 +43,7 @@ public class GameManagerCommand extends AbstractCommand {
                 switch (args[0]) {
                     case "help" -> showHelp(player);
                     case "list" -> listInstances(player);
+                    case "archived" -> listArchivedInstances(player);
                     default -> throw new InvalidArgumentException(player, String.format(INVALID_ARGUMENTS, args[0]));
                 }
             }
@@ -68,6 +70,23 @@ public class GameManagerCommand extends AbstractCommand {
         return true;
     }
 
+    private void listArchivedInstances(Player player) {
+        Collection<ArchivedGame> games = gameManagerService.listArchived();
+        PlayerMessage.info(String.format(GOLD + "Listing %s Instances:", games.size()), player);
+        gameManagerService.listArchived().forEach(gameInstance -> {
+                    player.sendMessage(String.format(YELLOW + "[%s]: %s, %s, Lobby: %s, Arena: %s, Timestamp: %s, Players: ",
+                            gameInstance.getInstanceId(),
+                            gameInstance.getGameResult(),
+                            gameInstance.getStage(),
+                            gameInstance.getLobbyName(),
+                            gameInstance.getArenaName(),
+                            gameInstance.getEndedAt(),
+                            gameInstance.getPlayerNames()
+                    ));
+                }
+        );
+    }
+
     private void nextStageInstance(Player player, String instanceId) {
         Stage stage = gameManagerService.nextStage(instanceId);
         PlayerMessage.success("Changed stage of instance to " + stage.toString(), player);
@@ -92,7 +111,8 @@ public class GameManagerCommand extends AbstractCommand {
     }
 
     private void stopInstance(Player player, String instanceId) {
-        //TODO #2
+        PlayerMessage.info("Stopping instance " + instanceId, player);
+        gameManagerService.end(instanceId);
     }
 
     private void createInstance(Player player, String lobbyName) {
@@ -108,6 +128,7 @@ public class GameManagerCommand extends AbstractCommand {
         player.sendMessage(String.format(YELLOW + "Lobby: %s", getLobbyName(instance)));
         player.sendMessage(String.format(YELLOW + "Arena: %s", getArenaName(instance)));
         player.sendMessage(String.format(YELLOW + "Players: %s:", instance.getCurrentPlayers().size()));
+        player.sendMessage(String.format(YELLOW + "Result: %s:", instance.getGameResult()));
         instance.getCurrentPlayers().forEach(playerInInstance -> player.sendMessage(YELLOW + playerInInstance.getName()));
     }
 

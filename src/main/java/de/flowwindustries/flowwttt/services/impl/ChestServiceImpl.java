@@ -27,7 +27,7 @@ public class ChestServiceImpl implements ChestService {
                     }
                     log.warning(String.format("Chest location obstructed: %s, %s, %s", block.getX(), block.getY(), block.getZ()));
                 });
-        log.info(String.format("Spawned %s in arena %s", arena.getChestSpawns().size(), arena.getArenaName()));
+        log.info(String.format("Spawned %s chests in arena %s", arena.getChestSpawns().size(), arena.getArenaName()));
     }
 
     @Override

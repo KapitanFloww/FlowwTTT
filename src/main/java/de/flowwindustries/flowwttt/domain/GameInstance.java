@@ -9,7 +9,10 @@ import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
+import de.flowwindustries.flowwttt.events.StartInstanceEvent;
 import de.flowwindustries.flowwttt.scheduled.Countdown;
+import de.flowwindustries.flowwttt.scheduled.Idler;
+import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +23,6 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +40,7 @@ import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
 public class GameInstance {
 
     public static final int GAME_DURATION = ConfigurationUtils.read(Integer.class, PATH_GAME_MAX_DURATION);
+
     /**
      * This game's identifier.
      */
@@ -83,12 +86,15 @@ public class GameInstance {
     private final List<Player> players = new ArrayList<>();
 
     /**
-     * Chest Service.
+     * Services.
      */
     private final ChestService chestService;
+    private final ArenaService arenaService;
 
-    public GameInstance(ChestService chestService) {
+    public GameInstance(ChestService chestService, ArenaService arenaService) {
         this.chestService = chestService;
+        this.arenaService = arenaService;
+        this.setStage(Stage.LOBBY);
     }
 
     /**
@@ -136,14 +142,18 @@ public class GameInstance {
      * @param stage the stage to set this instance to
      */
     public void setStage(Stage stage) {
-        this.stage = stage;
+        if(this.getStage() == stage) {
+            return;
+        }
         switch (stage) { //TODO #2 implement logic
-            case LOBBY -> System.out.println("Returning to lobby"); // Teleport all players to lobby, set gamemode to adventure
+            case LOBBY -> initializeLobby(); // Teleport all players to lobby, set gamemode to adventure
             case COUNTDOWN -> initializeCountdown();
             case GRACE_PERIOD -> initializeGracePeriod();
             case RUNNING -> initializeRunning(); // Disable grace period, keep track of the players
             case ENDGAME -> initializeEndgame(); // 10s countdown to display the results and winner, remove chests, teleport players
+            case ARCHIVED -> log.info("Archiving game instance " + this.getIdentifier());
         }
+        this.stage = stage;
     }
 
     private void initializeCountdown() {
@@ -161,6 +171,7 @@ public class GameInstance {
         }
         // Count down from 30s
         Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                this.getIdentifier(),
                 30,
                 () -> PlayerMessage.info("The match will start soon! Get ready!", getCurrentPlayers()),
                 () -> {
@@ -176,6 +187,7 @@ public class GameInstance {
         log.info(String.format("Initialize %s stage", Stage.GRACE_PERIOD));
         // Count down from 30s
         Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                this.getIdentifier(),
                 30,
                 () -> PlayerMessage.info("Grace Period has started!", getCurrentPlayers()),
                 () -> {
@@ -189,6 +201,7 @@ public class GameInstance {
     private void initializeRunning() {
         log.info(String.format("Initialize %s stage", Stage.RUNNING));
         Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                this.getIdentifier(),
                 GAME_DURATION,
                 () -> {},
                 () -> {
@@ -217,27 +230,43 @@ public class GameInstance {
         GameResult result = this.getGameResult();
 
         Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                this.getIdentifier(),
                 10,
-                () -> PlayerMessage.success("*********************************", this.getCurrentPlayers()),
                 () -> {
-                    // TODO set karma
-                    this.setStage(Stage.LOBBY);
-                    this.getCurrentPlayers().forEach(player -> {
-                        Location lobbyLocation = mapSpawnToLocation(this.getLobby().getLobbySpawn());
-                        player.teleport(lobbyLocation);
-                        player.setHealth(20);
-                        player.getInventory().clear();
-                        player.setGameMode(GameMode.ADVENTURE);
-                    });
-                },
-                t -> {
+                    PlayerMessage.success("*********************************", this.getCurrentPlayers());
                     if(result == GameResult.INNOCENT_WIN || result == GameResult.TIME_OUT) {
                         PlayerMessage.success("The INNOCENTS win", this.getCurrentPlayers());
                     } else {
                         PlayerMessage.warn("The TRAITORS win", this.getCurrentPlayers());
                     }
-                }
+                    healAndClearPlayers(this.getCurrentPlayers());
+                    teleportLobbyAll(this.getLobby().getLobbySpawn(), this.getCurrentPlayers());
+                    // TODO set karma
+                },
+                () -> {
+                    this.setStage(Stage.ARCHIVED);
+                    // TODO create a new game instance and assign all online players to it
+                },
+                t -> {}
         );
         countdown.scheduleCountdown();
+    }
+
+    public static void teleportLobbyAll(PlayerSpawn lobbySpawn, Collection<Player> players) {
+        Location lobbyLocation = mapSpawnToLocation(lobbySpawn);
+        players.forEach(player -> player.teleport(lobbyLocation));
+    }
+
+    public static void healAndClearPlayers(Collection<Player> players) {
+        players.forEach(player -> {
+            player.setHealth(20);
+            player.getInventory().clear();
+            player.setGameMode(GameMode.ADVENTURE);
+        });
+    }
+
+    private void initializeLobby() {
+        Idler lobbyIdler = new Idler(TTTPlugin.getInstance(), this, arenaService);
+        lobbyIdler.scheduleIdler();
     }
 }

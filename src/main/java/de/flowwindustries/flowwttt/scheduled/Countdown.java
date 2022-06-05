@@ -1,6 +1,8 @@
 package de.flowwindustries.flowwttt.scheduled;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
+import de.flowwindustries.flowwttt.services.GameManagerService;
+import de.flowwindustries.flowwttt.services.impl.GameManagerServiceImpl;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 
@@ -24,6 +26,11 @@ public class Countdown implements Runnable {
     private final TTTPlugin plugin;
 
     /**
+     * Associated instance id.
+     */
+    private final String instanceId;
+
+    /**
      * Task to be run before the countdown starts.
      */
     private final Runnable beforeCountdown;
@@ -33,6 +40,9 @@ public class Countdown implements Runnable {
      */
     private final Runnable afterCountdown;
 
+    /**
+     * To do each second.
+     */
     private final Consumer<Countdown> secondsConsumer;
 
     /**
@@ -47,8 +57,9 @@ public class Countdown implements Runnable {
     @Getter
     private int timeLeft;
 
-    public Countdown(TTTPlugin plugin, int totalSeconds, Runnable beforeCountdown, Runnable afterCountdown, Consumer<Countdown> secondsConsumer) {
+    public Countdown(TTTPlugin plugin, String instanceId, int totalSeconds, Runnable beforeCountdown, Runnable afterCountdown, Consumer<Countdown> secondsConsumer) {
         this.plugin = plugin;
+        this.instanceId = instanceId;
         this.time = totalSeconds;
         this.timeLeft = totalSeconds;
         this.beforeCountdown = beforeCountdown;
@@ -65,6 +76,7 @@ public class Countdown implements Runnable {
             afterCountdown.run();
             if(taskId != null) {
                 Bukkit.getScheduler().cancelTask(taskId);
+                GameManagerService.removeInstanceTaskId(this.instanceId, this.taskId);
                 return;
             }
         }
@@ -80,5 +92,6 @@ public class Countdown implements Runnable {
      */
     public void scheduleCountdown() {
         this.taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0L, 20L); // Run every 20 ticks = 1 second
+        GameManagerService.addInstanceTaskId(this.instanceId, this.taskId);
     }
 }

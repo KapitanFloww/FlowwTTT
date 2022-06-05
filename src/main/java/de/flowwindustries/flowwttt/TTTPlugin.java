@@ -4,10 +4,13 @@ import de.flowwindustries.flowwttt.commands.ArenaCommand;
 import de.flowwindustries.flowwttt.commands.GameManagerCommand;
 import de.flowwindustries.flowwttt.commands.LobbyCommand;
 import de.flowwindustries.flowwttt.config.DefaultConfiguration;
+import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.listener.PlayerDamagerListener;
 import de.flowwindustries.flowwttt.listener.PlayerMoveListener;
+import de.flowwindustries.flowwttt.listener.StartInstanceListener;
+import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
 import de.flowwindustries.flowwttt.repository.LobbyRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
@@ -37,15 +40,22 @@ public final class TTTPlugin extends JavaPlugin {
     @Getter
     private FileConfiguration configuration;
 
+    // Repositories
+    private ArenaRepository arenaRepository;
+    private LobbyRepository lobbyRepository;
+    private ArchivedGameRepository archivedGameRepository;
+
     // Services
     private ArenaService arenaService;
     private LobbyService lobbyService;
     private GameManagerService gameManagerService;
+    private ChestService chestService;
 
     @Override
     public void onEnable() {
         instance = this;
         setupConfig();
+        setupRepositories();
         setupServices();
         setupCommands();
         setupListener();
@@ -60,14 +70,18 @@ public final class TTTPlugin extends JavaPlugin {
         this.saveConfig();
     }
 
+    private void setupRepositories() {
+        this.arenaRepository = new ArenaRepository(Arena.class);
+        this.lobbyRepository = new LobbyRepository(Lobby.class);
+        this.archivedGameRepository = new ArchivedGameRepository(ArchivedGame.class);
+    }
+
     private void setupServices() {
         // Services
-        ChestService chestService = new ChestServiceImpl();
-        ArenaRepository arenaRepository = new ArenaRepository(Arena.class);
-        this.arenaService = new ArenaServiceImpl(arenaRepository);
-        LobbyRepository lobbyRepository = new LobbyRepository(Lobby.class);
-        this.lobbyService = new LobbyServiceImpl(lobbyRepository, arenaService);
-        this.gameManagerService = new GameManagerServiceImpl(chestService);
+        this.chestService = new ChestServiceImpl();
+        this.arenaService = new ArenaServiceImpl(this.arenaRepository);
+        this.lobbyService = new LobbyServiceImpl(this.lobbyRepository, arenaService);
+        this.gameManagerService = new GameManagerServiceImpl(chestService, arenaService, archivedGameRepository);
     }
 
     private void setupCommands() {
@@ -80,5 +94,6 @@ public final class TTTPlugin extends JavaPlugin {
         PluginManager pluginManager = Bukkit.getPluginManager();
         pluginManager.registerEvents(new PlayerMoveListener(this.gameManagerService), this);
         pluginManager.registerEvents(new PlayerDamagerListener(this.gameManagerService), this);
+        pluginManager.registerEvents(new StartInstanceListener(this.gameManagerService), this);
     }
 }

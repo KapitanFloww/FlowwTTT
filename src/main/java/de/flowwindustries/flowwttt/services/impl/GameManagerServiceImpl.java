@@ -1,16 +1,24 @@
 package de.flowwindustries.flowwttt.services.impl;
 
+import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.GameInstance;
+import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
+import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
+import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
-import javax.swing.text.html.CSS;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,6 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static de.flowwindustries.flowwttt.domain.GameInstance.healAndClearPlayers;
+import static de.flowwindustries.flowwttt.domain.GameInstance.teleportLobbyAll;
 
 /**
  * Service implementation of {@link GameManagerService}.
@@ -28,16 +40,19 @@ public class GameManagerServiceImpl implements GameManagerService {
 
     private static final List<GameInstance> instances = new ArrayList<>();
     private static final Map<Player, String> playerInstanceMap = new HashMap<>();
+
     private final ChestService chestService;
+    private final ArenaService arenaService;
+    private final ArchivedGameRepository archivedGameRepository;
 
     @Override
     public GameInstance newInstance(Lobby lobby) {
-        GameInstance gameInstance = new GameInstance(chestService);
+        GameInstance gameInstance = new GameInstance(chestService, arenaService);
         gameInstance.setIdentifier(UUID.randomUUID().toString());
         gameInstance.setLobby(lobby);
-        gameInstance.setStage(Stage.LOBBY);
         instances.add(gameInstance);
-        log.info("Created new game instance with id: " + gameInstance.getIdentifier());
+        log.info("Created " +
+                "new game instance with id: " + gameInstance.getIdentifier());
         return gameInstance;
     }
 
@@ -95,7 +110,10 @@ public class GameManagerServiceImpl implements GameManagerService {
                 return Stage.RUNNING;
             }
             case ENDGAME -> {
-                instance.setStage(Stage.LOBBY);
+                Lobby lobby = instance.getLobby();
+                GameInstance nextInstance = newInstance(lobby);
+                instances.add(nextInstance);
+                Bukkit.getOnlinePlayers().forEach(player -> playerInstanceMap.put(player, nextInstance.getIdentifier()));
                 return Stage.LOBBY;
             }
             default -> throw new IllegalStateException("Instance is in invalid stage");
@@ -104,7 +122,37 @@ public class GameManagerServiceImpl implements GameManagerService {
 
     @Override
     public void end(String identifier) {
-        //TODO #2 implement end
+        GameInstance instance = getGameInstanceSafe(identifier);
+
+        if(instance.getStage() == Stage.ARCHIVED) {
+            return;
+        }
+        if(instance.getGameResult() == GameResult.CANCELED) {
+            return;
+        }
+
+        healAndClearPlayers(instance.getCurrentPlayers());
+        teleportLobbyAll(instance.getLobby().getLobbySpawn(), instance.getCurrentPlayers());
+
+        List<Integer> instanceTasks = GameManagerService.getInstanceTask(instance.getIdentifier());
+        if(instanceTasks != null) {
+            instanceTasks.forEach(taskId -> {
+                log.info("Canceling task " + taskId);
+                Bukkit.getScheduler().cancelTask(taskId);
+            });
+        }
+        GameManagerService.clearTask(instance.getIdentifier());
+        instance.setGameResult(GameResult.CANCELED);
+
+        instance.setStage(Stage.ARCHIVED);
+        this.archivedGameRepository.create(new ArchivedGame(identifier,
+                instance.getGameResult(),
+                instance.getStage(),
+                instance.getLobby().getLobbyName(),
+                instance.getArena().getArenaName(),
+                instance.getCurrentPlayers().stream().map(HumanEntity::getName).collect(Collectors.toList()),
+                Instant.now(Clock.system(ZoneId.systemDefault())))
+        );
     }
 
     @Override
@@ -118,6 +166,12 @@ public class GameManagerServiceImpl implements GameManagerService {
         log.config("Request to get instance with identifier: " + identifier);
         return Optional.ofNullable(getGameInstance(identifier))
                 .orElseThrow(() -> new IllegalArgumentException("No game instance found for identifier: " + identifier));
+    }
+
+    @Override
+    public Collection<ArchivedGame> listArchived() {
+        log.config("Request to list all archived instances");
+        return archivedGameRepository.findAll();
     }
 
     private GameInstance getGameInstance(String identifier) {
