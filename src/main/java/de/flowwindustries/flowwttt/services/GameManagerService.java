@@ -135,7 +135,7 @@ public interface GameManagerService {
      * Clear the tasks of this instance.
      * @param instanceId the instance id to clear the task ids of
      */
-    static void clearTask(String instanceId) {
+    static void clearTasks(String instanceId) {
         instancesTaskMap.remove(instanceId);
     }
 }

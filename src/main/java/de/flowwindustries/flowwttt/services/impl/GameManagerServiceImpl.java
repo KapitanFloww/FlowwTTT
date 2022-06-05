@@ -141,7 +141,7 @@ public class GameManagerServiceImpl implements GameManagerService {
                 Bukkit.getScheduler().cancelTask(taskId);
             });
         }
-        GameManagerService.clearTask(instance.getIdentifier());
+        GameManagerService.clearTasks(instance.getIdentifier());
         instance.setGameResult(GameResult.CANCELED);
 
         instance.setStage(Stage.ARCHIVED);
