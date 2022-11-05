@@ -12,11 +12,11 @@ public class DefaultConfiguration {
     public static final String PATH_DB_REMOTE = "database.remote";
     public static final String PATH_DB_SHOW_SQL = "database.show-sql";
     public static final String PATH_DB_DDL = "database.ddl-auto";
-    public static final String PATH_DB_HOST = "database.mariadb.host";
-    public static final String PATH_DB_PORT = "database.mariadb.port";
-    public static final String PATH_DB_DATABASE = "database.mariadb.database";
-    public static final String PATH_DB_USERNAME = "database.mariadb.username";
-    public static final String PATH_DB_PASSWORD = "database.mariadb.password";
+    public static final String PATH_DB_HOST = "database.datasource.host";
+    public static final String PATH_DB_PORT = "database.datasource.port";
+    public static final String PATH_DB_DATABASE = "database.datasource.database";
+    public static final String PATH_DB_USERNAME = "database.datasource.username";
+    public static final String PATH_DB_PASSWORD = "database.datasource.password";
     public static final String PATH_DEFAULT_LOBBY = "lobby.default.name";
     public static final String PATH_GAME_MAX_DURATION = "game.max-duration";
     public static final String PATH_GAME_MIN_PLAYERS = "game.players.min";
@@ -33,10 +33,10 @@ public class DefaultConfiguration {
         configuration.addDefault(PATH_DB_DDL, "update");
 
         configuration.addDefault(PATH_DB_HOST, "localhost");
-        configuration.addDefault(PATH_DB_PORT, 3306);
-        configuration.addDefault(PATH_DB_DATABASE, "ttt");
-        configuration.addDefault(PATH_DB_USERNAME, "ttt");
-        configuration.addDefault(PATH_DB_PASSWORD, "password");
+        configuration.addDefault(PATH_DB_PORT, 5432);
+        configuration.addDefault(PATH_DB_DATABASE, "flowwTTT");
+        configuration.addDefault(PATH_DB_USERNAME, "flowwTTT");
+        configuration.addDefault(PATH_DB_PASSWORD, "MyStr0ng!Passw0rd");
 
         configuration.addDefault(PATH_DEFAULT_LOBBY, "Lobby");
 

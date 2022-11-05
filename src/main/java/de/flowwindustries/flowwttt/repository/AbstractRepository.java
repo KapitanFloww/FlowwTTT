@@ -155,11 +155,11 @@ public abstract class AbstractRepository<E, I> {
                 String databaseUsername = ConfigurationUtils.read(String.class, PATH_DB_USERNAME);
                 String databasePassword = ConfigurationUtils.read(String.class, PATH_DB_PASSWORD);
 
-                properties.put("jakarta.persistence.jdbc.driver", "org.mariadb.jdbc.Driver");
-                properties.put("jakarta.persistence.jdbc.url", "jdbc:mariadb://" + databaseHost + ":" + databasePort + "/" + databaseName + "?autoReconnect=true");
+                properties.put("jakarta.persistence.jdbc.driver", "org.postgresql.Driver");
+                properties.put("jakarta.persistence.jdbc.url", "jdbc:postgresql://" + databaseHost + ":" + databasePort + "/" + databaseName + "?autoReconnect=true");
                 properties.put("jakarta.persistence.jdbc.user", databaseUsername);
                 properties.put("jakarta.persistence.jdbc.password", databasePassword);
-                properties.put("hibernate.dialect", "org.hibernate.dialect.MariaDBDialect");
+                properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
             } else { // Setup H2 Connection
                 properties.put("javax.persistence.jdbc.driver", "org.h2.Driver");
                 properties.put("javax.persistence.jdbc.url", "jdbc:h2:file:~/test;USER=sa;PASSWORD=password");
