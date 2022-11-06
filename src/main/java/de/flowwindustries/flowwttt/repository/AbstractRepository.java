@@ -86,6 +86,19 @@ public abstract class AbstractRepository<E, I> {
         entityManager.close();
     }
 
+    @Transactional
+    public synchronized void removeAll() {
+        EntityManager entityManager = getEntityManager();
+        EntityTransaction entityTransaction = entityManager.getTransaction();
+        entityTransaction.begin();
+
+        var entities = findAll();
+        entities.forEach(this::remove);
+
+        entityTransaction.commit();
+        entityManager.close();
+    }
+
     /**
      * Find a persistent entity.
      * @param id id of the
@@ -122,6 +135,14 @@ public abstract class AbstractRepository<E, I> {
         entityTransaction.commit();
         entityManager.close();
         return e;
+    }
+
+    /**
+     * Count all stored entities.
+     * @return the number of stored entities
+     */
+    public long count() {
+        return findAll().size();
     }
 
     /**

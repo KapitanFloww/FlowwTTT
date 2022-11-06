@@ -1,0 +1,32 @@
+database:
+  # H2 Database Settings
+  hibernate:
+    show-sql: false
+    ddl-auto: update
+    dialect: org.hibernate.dialect.H2Dialect
+    connection-provider: org.hibernate.hikaricp.internal.HikariCPConnectionProvider
+  jdbc:
+    password: MyStr0ng!Passw0rd
+    driver: org.h2.Driver
+    url: jdbc:h2:mem:testdb
+    username: sa
+# Local Postgresql Settings
+#  hibernate:
+#    show-sql: false
+#    ddl-auto: update
+#    dialect: org.hibernate.dialect.PostgreSQLDialect
+#    connection-provider: org.hibernate.hikaricp.internal.HikariCPConnectionProvider
+#  jdbc:
+#    driver: org.postgresql.Driver
+#    url: jdbc:postgresql://localhost:5432/flowwTTT?autoReconnect=true
+#    username: flowwTTT
+#    password: MyStr0ng!Passw0rd
+
+lobby:
+  default:
+    name: Lobby
+
+game:
+  max-duration: 300
+  players:
+    min: 4

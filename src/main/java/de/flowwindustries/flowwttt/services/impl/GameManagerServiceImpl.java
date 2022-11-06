@@ -13,7 +13,6 @@ import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import java.time.Clock;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static de.flowwindustries.flowwttt.domain.GameInstance.healAndClearPlayers;
 import static de.flowwindustries.flowwttt.domain.GameInstance.teleportLobbyAll;
@@ -150,7 +148,7 @@ public class GameManagerServiceImpl implements GameManagerService {
                 instance.getStage(),
                 instance.getLobby().getLobbyName(),
                 instance.getArena().getArenaName(),
-                instance.getCurrentPlayers().stream().map(HumanEntity::getName).collect(Collectors.toList()),
+                instance.getCurrentPlayers().toString(),
                 Instant.now(Clock.system(ZoneId.systemDefault())))
         );
     }
