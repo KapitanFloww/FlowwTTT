@@ -3,7 +3,6 @@ package de.flowwindustries.flowwttt.commands;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.ChestSpawn;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
-import de.flowwindustries.flowwttt.exceptions.InvalidArgumentException;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import lombok.extern.java.Log;
 import org.bukkit.ChatColor;
@@ -30,7 +29,7 @@ public class ArenaCommand extends AbstractCommand {
     }
 
     @Override
-    protected boolean playerCommand(Player player, String[] args) throws InvalidArgumentException {
+    protected boolean playerCommand(Player player, String[] args) {
         switch (args.length) {
             case 1 -> {
                 if(args[0].equalsIgnoreCase("list")) {
@@ -52,7 +51,7 @@ public class ArenaCommand extends AbstractCommand {
                             listArenas(player, true);
                         }
                     }
-                    default -> throw new InvalidArgumentException(player, UNKNOWN_ARG_0);
+                    default -> throw new IllegalArgumentException(UNKNOWN_ARG_0);
                 }
                 return true;
             }
@@ -62,19 +61,19 @@ public class ArenaCommand extends AbstractCommand {
                     switch (args[0].toLowerCase(Locale.ROOT)) {
                         case "removespawn" -> removeSpawn(player, args[1], id); // /arena removespawn <name> <id>
                         case "removechest" -> removeChest(player, args[1], id); // /arena removespawn <name> <id>
-                        default -> throw new InvalidArgumentException(player, UNKNOWN_ARG_0);
+                        default -> throw new IllegalArgumentException(UNKNOWN_ARG_0);
                     }
                 } catch (NumberFormatException ex) {
-                    throw new InvalidArgumentException(player, "Not a number: " + args[2]);
+                    throw new IllegalArgumentException("Not a number: " + args[2]);
                 }
             }
-            default -> throw new InvalidArgumentException(player, "See /arena help");
+            default -> throw new IllegalArgumentException("See /arena help");
         }
         return true;
     }
 
     @Override
-    protected boolean consoleCommand(String[] args) throws InvalidArgumentException {
+    protected boolean consoleCommand(String[] args) {
         log.info("Not yet implemented!");
         return false;
     }
