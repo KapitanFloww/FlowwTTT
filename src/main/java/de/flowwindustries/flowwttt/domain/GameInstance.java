@@ -2,14 +2,12 @@ package de.flowwindustries.flowwttt.domain;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.commands.PlayerMessage;
-import de.flowwindustries.flowwttt.config.ConfigurationUtils;
 import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
-import de.flowwindustries.flowwttt.events.StartInstanceEvent;
 import de.flowwindustries.flowwttt.scheduled.Countdown;
 import de.flowwindustries.flowwttt.scheduled.Idler;
 import de.flowwindustries.flowwttt.services.ArenaService;
@@ -30,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_MAX_DURATION;
+import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readInt;
 import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
 
 /**
@@ -39,7 +38,7 @@ import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
 @Log
 public class GameInstance {
 
-    public static final int GAME_DURATION = ConfigurationUtils.read(Integer.class, PATH_GAME_MAX_DURATION);
+    public final int maxGameDuration;
 
     /**
      * This game's identifier.
@@ -92,6 +91,7 @@ public class GameInstance {
     private final ArenaService arenaService;
 
     public GameInstance(ChestService chestService, ArenaService arenaService) {
+        this.maxGameDuration = readInt(PATH_GAME_MAX_DURATION);
         this.chestService = chestService;
         this.arenaService = arenaService;
         this.setStage(Stage.LOBBY);
@@ -205,7 +205,7 @@ public class GameInstance {
         log.info(String.format("Initialize %s stage", Stage.RUNNING));
         Countdown countdown = new Countdown(TTTPlugin.getInstance(),
                 this.getIdentifier(),
-                GAME_DURATION,
+                maxGameDuration,
                 () -> {},
                 () -> {
                     PlayerMessage.info("Time has run out. Innocents win!", this.getCurrentPlayers());

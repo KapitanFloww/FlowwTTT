@@ -8,12 +8,16 @@ import org.bukkit.configuration.file.FileConfiguration;
  * Utility class to provide easy access to the {@link FileConfiguration}.
  */
 @Log
-public class ConfigurationUtils {
+public class FileConfigurationWrapper {
 
-    private final static FileConfiguration fileConfiguration;
+    private static FileConfiguration fileConfiguration;
 
-    static {
-        fileConfiguration = TTTPlugin.getInstance().getConfiguration();
+    /**
+     * Initialize.
+     * @param configuration the configuration to wrap
+     */
+    public void ofConfiguration(FileConfiguration configuration) {
+        fileConfiguration = configuration;
     }
 
     /**
@@ -44,11 +48,30 @@ public class ConfigurationUtils {
         throw new RuntimeException("Invalid value type on path: " + path);
     }
 
+    /**
+     * Read this configuration value.
+     * @param path the key / path
+     * @return the {@link String} value
+     */
     public static String readString(String path) {
         return read(String.class, path);
     }
 
+    /**
+     * Read this configuration value.
+     * @param path the key / path
+     * @return the {@link Boolean} value
+     */
     public static boolean readBoolean(String path) {
         return read(Boolean.class, path);
+    }
+
+    /**
+     * Read this configuration value.
+     * @param path the key / path
+     * @return the {@link Integer} value
+     */
+    public static int readInt(String path) {
+        return read(Integer.class, path);
     }
 }

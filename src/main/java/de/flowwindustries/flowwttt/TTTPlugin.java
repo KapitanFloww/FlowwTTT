@@ -4,6 +4,7 @@ import de.flowwindustries.flowwttt.commands.ArenaCommand;
 import de.flowwindustries.flowwttt.commands.GameManagerCommand;
 import de.flowwindustries.flowwttt.commands.LobbyCommand;
 import de.flowwindustries.flowwttt.config.DefaultConfiguration;
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
@@ -25,7 +26,6 @@ import de.flowwindustries.flowwttt.services.impl.LobbyServiceImpl;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -39,8 +39,7 @@ public final class TTTPlugin extends JavaPlugin {
 
     @Getter
     private static TTTPlugin instance;
-    @Getter
-    private FileConfiguration configuration;
+    private FileConfigurationWrapper configurationWrapper;
 
     // Repositories
     private ArenaRepository arenaRepository;
@@ -70,10 +69,11 @@ public final class TTTPlugin extends JavaPlugin {
     }
 
     private void setupConfig() {
-        if(this.configuration == null) {
-            this.configuration = this.getConfig();
+        if(this.configurationWrapper == null) {
+            this.configurationWrapper = new FileConfigurationWrapper();
+            this.configurationWrapper.ofConfiguration(this.getConfig());
         }
-        DefaultConfiguration.setupDefaultConfiguration(this.getConfiguration());
+        DefaultConfiguration.setupDefaultConfiguration(this.getConfig());
         this.saveConfig();
     }
 
@@ -91,8 +91,8 @@ public final class TTTPlugin extends JavaPlugin {
     private void setupServices() {
         // Services
         this.chestService = new ChestServiceImpl();
-        this.arenaService = new ArenaServiceImpl(this.arenaRepository);
-        this.lobbyService = new LobbyServiceImpl(this.lobbyRepository, arenaService);
+        this.arenaService = new ArenaServiceImpl(arenaRepository);
+        this.lobbyService = new LobbyServiceImpl(arenaService, lobbyRepository);
         this.gameManagerService = new GameManagerServiceImpl(chestService, arenaService, archivedGameRepository);
     }
 

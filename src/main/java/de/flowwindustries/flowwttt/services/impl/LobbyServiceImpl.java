@@ -1,6 +1,5 @@
 package de.flowwindustries.flowwttt.services.impl;
 
-import de.flowwindustries.flowwttt.config.ConfigurationUtils;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
@@ -14,6 +13,8 @@ import java.util.Collection;
 import java.util.Optional;
 
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DEFAULT_LOBBY;
+import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readString;
+import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.write;
 
 @Log
 @RequiredArgsConstructor
@@ -21,10 +22,10 @@ public class LobbyServiceImpl implements LobbyService {
 
     public static final String LOBBY_NOT_FOUND = "Lobby with name %s does not exist";
     public static final String LOBBY_ALREADY_EXISTS = "Lobby with name %s does already exist";
-
     private static final String INVALID_NAME = "Invalid lobby name: %s";
-    private final LobbyRepository lobbyRepository;
+
     private final ArenaService arenaService;
+    private final LobbyRepository lobbyRepository;
 
     @Override
     public void createLobby(String lobbyName) {
@@ -53,12 +54,12 @@ public class LobbyServiceImpl implements LobbyService {
     @Override
     public void setDefaultLobby(String lobbyName) {
         log.info("Request to set default lobby name: " + lobbyName);
-        ConfigurationUtils.write(PATH_DEFAULT_LOBBY, lobbyName);
+        write(PATH_DEFAULT_LOBBY, lobbyName);
     }
 
     @Override
     public String getDefaultLobbyName() {
-        return ConfigurationUtils.read(String.class, PATH_DEFAULT_LOBBY);
+        return readString(PATH_DEFAULT_LOBBY);
     }
 
     @Override

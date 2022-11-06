@@ -12,16 +12,16 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Properties;
 
-import static de.flowwindustries.flowwttt.config.ConfigurationUtils.readBoolean;
-import static de.flowwindustries.flowwttt.config.ConfigurationUtils.readString;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_DRIVER;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_PASSWORD;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_URL;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_USERNAME;
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_CONNECTION_PROVIDER;
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_DDL_AUTO;
-import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_DRIVER;
-import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_URL;
-import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_PASSWORD;
-import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_SHOW_SQL;
-import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DATASOURCE_JDBC_USERNAME;
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_DIALECT;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_SHOW_SQL;
+import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readBoolean;
+import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readString;
 
 /**
  * Abstract class to provide easy functionality to access the persistence layer.
@@ -140,7 +140,6 @@ public abstract class AbstractRepository<E, I> {
 
     private void setupEntityManagerFactory() {
         if (entityManagerFactory == null || !entityManagerFactory.isOpen()) {
-
             var showSQL = readBoolean(PATH_HIBERNATE_SHOW_SQL);
             var ddlAuto = readString(PATH_HIBERNATE_DDL_AUTO);
             var hibernateDialect = readString(PATH_HIBERNATE_DIALECT);
