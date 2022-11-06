@@ -12,7 +12,7 @@ import java.io.File;
  */
 public class PluginContextTestExtension implements BeforeAllCallback {
 
-    private static final String TEST_CONFIG_FILE_PATH = "/Users/florian/IdeaProjects/FlowwTTT/src/test/resources/config.yml";
+    private static final String TEST_CONFIG_FILE_PATH = "src/test/resources/config.yml";
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) throws Exception {
