@@ -5,7 +5,6 @@ import de.flowwindustries.flowwttt.domain.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
-import de.flowwindustries.flowwttt.exceptions.InvalidArgumentException;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import de.flowwindustries.flowwttt.services.LobbyService;
@@ -37,14 +36,14 @@ public class GameManagerCommand extends AbstractCommand {
     }
 
     @Override
-    protected boolean playerCommand(Player player, String[] args) throws InvalidArgumentException {
+    protected boolean playerCommand(Player player, String[] args) {
         switch (args.length) {
             case 1 -> {
                 switch (args[0]) {
                     case "help" -> showHelp(player);
                     case "list" -> listInstances(player);
                     case "archived" -> listArchivedInstances(player);
-                    default -> throw new InvalidArgumentException(player, String.format(INVALID_ARGUMENTS, args[0]));
+                    default -> throw new IllegalArgumentException(String.format(INVALID_ARGUMENTS, args[0]));
                 }
             }
             case 2 -> {
@@ -53,7 +52,7 @@ public class GameManagerCommand extends AbstractCommand {
                     case "create" -> createInstance(player, args[1]);
                     case "stop" -> stopInstance(player, args[1]);
                     case "nextstage" -> nextStageInstance(player, args[1]);
-                    default -> throw new InvalidArgumentException(player, String.format(INVALID_ARGUMENTS, args[0]));
+                    default -> throw new IllegalArgumentException(String.format(INVALID_ARGUMENTS, args[0]));
                 }
             }
             case 3 -> {
@@ -62,10 +61,10 @@ public class GameManagerCommand extends AbstractCommand {
                     case "start" -> startInstance(args[1], args[2]);
                     case "addplayer" -> addPlayer(player, args[1], args[2]);
                     case "removeplayer" -> removePlayer(player, args[1], args[2]);
-                    default -> throw new InvalidArgumentException(player, String.format(INVALID_ARGUMENTS, args[0]));
+                    default -> throw new IllegalArgumentException(String.format(INVALID_ARGUMENTS, args[0]));
                 }
             }
-            default -> throw new InvalidArgumentException(player, "See /gm help");
+            default -> throw new IllegalArgumentException("See /gm help");
         }
         return true;
     }
@@ -169,7 +168,7 @@ public class GameManagerCommand extends AbstractCommand {
     }
 
     @Override
-    protected boolean consoleCommand(String[] args) throws InvalidArgumentException {
+    protected boolean consoleCommand(String[] args) {
         log.info("Not yet implemented!");
         return false;
     }

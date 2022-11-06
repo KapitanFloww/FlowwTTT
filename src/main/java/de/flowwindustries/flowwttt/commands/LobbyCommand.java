@@ -2,7 +2,6 @@ package de.flowwindustries.flowwttt.commands;
 
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
-import de.flowwindustries.flowwttt.exceptions.InvalidArgumentException;
 import de.flowwindustries.flowwttt.services.LobbyService;
 import lombok.extern.java.Log;
 import org.bukkit.ChatColor;
@@ -30,7 +29,7 @@ public class LobbyCommand extends AbstractCommand {
     }
 
     @Override
-    protected boolean playerCommand(Player player, String[] args) throws InvalidArgumentException {
+    protected boolean playerCommand(Player player, String[] args) {
         switch (args.length) {
             case 0 -> teleportDefault(player);
             case 1 -> {
@@ -50,7 +49,7 @@ public class LobbyCommand extends AbstractCommand {
                     case "delete" -> deleteLobby(player, args[1]);
                     case "setspawn" -> setSpawnLobby(player, args[1]);
                     case "setdefault" -> setDefaultLobby(player, args[1]);
-                    default -> throw new InvalidArgumentException(player, UNKNOWN_ARG_0);
+                    default -> throw new IllegalArgumentException(UNKNOWN_ARG_0);
                 }
             }
             case 3 -> {
@@ -62,9 +61,9 @@ public class LobbyCommand extends AbstractCommand {
                     removeLobbyArena(player, args[1], args[2]);
                     return true;
                 }
-                throw new InvalidArgumentException(player, UNKNOWN_ARG_0);
+                throw new IllegalArgumentException(UNKNOWN_ARG_0);
             }
-            default -> throw new InvalidArgumentException(player, "See /lobby help");
+            default -> throw new IllegalArgumentException("See /lobby help");
         }
         return true;
     }
@@ -96,7 +95,7 @@ public class LobbyCommand extends AbstractCommand {
     }
 
     @Override
-    protected boolean consoleCommand(String[] args) throws InvalidArgumentException {
+    protected boolean consoleCommand(String[] args) {
         log.info("Not yet implemented!");
         return false;
     }
