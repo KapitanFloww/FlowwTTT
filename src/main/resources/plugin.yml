@@ -1,7 +1,7 @@
 name: FlowwTTT
 version: '${project.version}'
 main: de.flowwindustries.flowwttt.TTTPlugin
-api-version: 1.18
+api-version: 1.19
 prefix: FlowwTTT
 authors: [ Kapitan_Floww ]
 description: Trouble in Terrorist Town Plugin
