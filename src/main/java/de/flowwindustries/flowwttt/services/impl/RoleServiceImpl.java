@@ -2,62 +2,70 @@ package de.flowwindustries.flowwttt.services.impl;
 
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.services.RoleService;
+import lombok.extern.java.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
+import java.util.stream.IntStream;
 
+@Log
 public class RoleServiceImpl implements RoleService {
 
     private static final Random rand = new Random();
-    private final Map<Role, Float> roleRatios = new HashMap<>();
+    private final Map<Role, Float> roleRatios;
 
-    public RoleServiceImpl() {
-        this.roleRatios.put(Role.INNOCENT, 60.0f); // 60%
-        this.roleRatios.put(Role.TRAITOR, 30.0f); // 30%
-        this.roleRatios.put(Role.DETECTIVE, 10.0f); // 10%
+    public RoleServiceImpl(Map<Role, Float> roleRations) {
+        this.roleRatios  = Objects.requireNonNull(roleRations);
     }
 
     @Override
     public Map<String, Role> assignRoles(List<String> players) {
 
-        int nPlayersRemaining = players.size();
-
-        List<String> remainingPlayers = new ArrayList<>(players);
-
-        Random rand = new Random();
-
         Map<String, Role> roleAssignment = new HashMap<>();
 
-        for(Role role : roleRatios.keySet())
-        {
-           float roleRatio = roleRatios.get(role);
+        final long totalPlayers = players.size();
+        List<String> playersWithoutRole = new ArrayList<>(players);
+        List<String> playersWithRole = new ArrayList<>();
 
-           int nPlayersTotal = players.size();
+        // Iterate through all roles
+        roleRatios.keySet().forEach(role -> {
+            final float roleRatio = roleRatios.get(role);
+            int roleOccurrence = (int) Math.ceil(totalPlayers * roleRatio);
 
-           int playersInRole = (int) Math.ceil( nPlayersTotal * roleRatio);
+            log.info("Role: %s, Occurrence: %sx (%s)".formatted(role, roleOccurrence, roleRatio));
 
-           if(nPlayersRemaining - playersInRole >= 0){
-               nPlayersRemaining -= playersInRole;
-           }
-           else{
-               playersInRole = nPlayersRemaining;
-           }
+            // Get a player for each occurrence
+            IntStream.range(0, roleOccurrence).forEach(index -> {
 
-           for(int i = 0; i< playersInRole; i++){
+                final int randomIndex = getRandomIndex(playersWithoutRole.size(), playersWithRole.size());
+                if(playersWithoutRole.size() == 0) {
+                    log.info("No players without role left. Skipping");
+                    return;
+                }
+                String randomPlayerName = playersWithoutRole.get(randomIndex);
+                log.info("Random index: %s, Player: %s".formatted(randomIndex, randomPlayerName));
 
-               int randomIndex = rand.nextInt(remainingPlayers.size());
-               String randomPlayerName = remainingPlayers.get(randomIndex);
-               remainingPlayers.remove(randomIndex);
+                // Update lists
+                playersWithRole.add(randomPlayerName);
+                playersWithoutRole.remove(randomPlayerName);
 
-               roleAssignment.put(randomPlayerName, role);
-
-           }
-
-
-        }
+                // Save player assignment
+                roleAssignment.put(randomPlayerName, role);
+            });
+        });
         return roleAssignment;
+    }
+
+    private static int getRandomIndex(int playersWithoutSize, int playersWithSize) {
+        int upperBound = playersWithoutSize - playersWithSize;
+        if(upperBound > 0) {
+            return rand.nextInt(upperBound);
+        } else {
+            return 0;
+        }
     }
 }
