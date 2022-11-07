@@ -2,8 +2,8 @@ package de.flowwindustries.flowwttt.services.impl;
 
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.services.RoleService;
-import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,19 +11,27 @@ import java.util.Random;
 
 public class RoleServiceImpl implements RoleService {
 
+    private static final Random rand = new Random();
+    private final Map<Role, Float> roleRatios = new HashMap<>();
+
+    public RoleServiceImpl() {
+        this.roleRatios.put(Role.INNOCENT, 60.0f); // 60%
+        this.roleRatios.put(Role.TRAITOR, 30.0f); // 30%
+        this.roleRatios.put(Role.DETECTIVE, 10.0f); // 10%
+    }
 
     @Override
-    public Map<Player, Role> assignRoles(List<Player> players, List<Role> roles, Map<Role, Integer> roleRatios) {
+    public Map<String, Role> assignRoles(List<String> players) {
 
         int nPlayersRemaining = players.size();
 
-        List<Player> remainingPlayers = players;
+        List<String> remainingPlayers = new ArrayList<>(players);
 
         Random rand = new Random();
 
-        Map<Player, Role> roleAssignment = new HashMap<>();
+        Map<String, Role> roleAssignment = new HashMap<>();
 
-        for(Role role : roles)
+        for(Role role : roleRatios.keySet())
         {
            float roleRatio = roleRatios.get(role);
 
@@ -41,10 +49,10 @@ public class RoleServiceImpl implements RoleService {
            for(int i = 0; i< playersInRole; i++){
 
                int randomIndex = rand.nextInt(remainingPlayers.size());
-               Player randomPlayer = remainingPlayers.get(randomIndex);
+               String randomPlayerName = remainingPlayers.get(randomIndex);
                remainingPlayers.remove(randomIndex);
 
-               roleAssignment.put(randomPlayer, role);
+               roleAssignment.put(randomPlayerName, role);
 
            }
 
