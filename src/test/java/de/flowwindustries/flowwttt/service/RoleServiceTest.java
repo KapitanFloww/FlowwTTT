@@ -26,39 +26,34 @@ public class RoleServiceTest {
     private final RoleService roleService = new RoleServiceImpl(roleRatios);
 
     @Test
-    void verifyPlayerRolesAssignedEvenAmountSmall() {
-        var playerList = List.of("Kapitan_Floww", "saltysnacc", "Caropop", "Lucky_Miner23", "Explosive_Sheep",
-                                             "FunPixelHD", "Player7", "Player8", "Player9", "Player10",
-                                             "Player11", "Player12", "Player13", "Player14", "Player15",
-                                             "Player16", "Player17", "Player18", "Player19", "Player20");
+    void verifyPlayerRolesAssignedEven() {
+        var playerList = List.of("Player1", "Player2", "Player3", "Player4", "Player5",
+                "Player6", "Player7", "Player8", "Player9", "Player10");
         verifyRoleAssignment(playerList);
     }
 
     @Test
-    void verifyPlayerRolesAssignedEvenAmountLarge() {
-        var playerList = List.of("Kapitan_Floww", "saltysnacc", "Caropop", "Lucky_Miner23", "Explosive_Sheep",
-                "FunPixelHD", "Player7", "Player8", "Player9", "Player10");
-        verifyRoleAssignment(playerList);
-    }
-
-    @Test
-    void verifyPlayerRolesAssignedUnEvenAmountSmall() {
-        var playerList = List.of("Kapitan_Floww", "saltysnacc", "Caropop", "Lucky_Miner23", "Explosive_Sheep",
-                "FunPixelHD", "Player7", "Player8", "Player9", "Player10", "Player11");
+    void verifyPlayerRolesAssignedUneven() {
+        var playerList = List.of("Player1", "Player2", "Player3", "Player4", "Player5",
+                "Player6", "Player7", "Player8", "Player9", "Player10", "Player11");
         verifyRoleAssignment(playerList);
     }
 
     private void verifyRoleAssignment(List<String> playerList) {
         var result = roleService.assignRoles(playerList);
-
         // Verify correct occurrences
         var innocents = filterRole(result, Role.INNOCENT);
         var detective = filterRole(result, Role.DETECTIVE);
         var traitor = filterRole(result, Role.TRAITOR);
-        assertThat(innocents).hasSize((int) (roleRatios.get(Role.INNOCENT) * playerList.size()));
+
+        if(playerList.size() % 2 == 0) {
+            assertThat(innocents).hasSize((int) (roleRatios.get(Role.INNOCENT) * playerList.size()));
+        } else {
+            assertThat(innocents).hasSize((int) (roleRatios.get(Role.INNOCENT) * playerList.size() + 1)); // add stashed member
+        }
+
         assertThat(detective).hasSize((int) (roleRatios.get(Role.DETECTIVE) * playerList.size()));
         assertThat(traitor).hasSize((int) (roleRatios.get(Role.TRAITOR) * playerList.size()));
-
         // Verify all different names
         assertThat(result.keySet()).hasSize(playerList.size());
     }

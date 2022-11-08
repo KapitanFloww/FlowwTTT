@@ -31,6 +31,23 @@ public class RoleServiceImpl implements RoleService {
         List<String> playersWithoutRole = new ArrayList<>(players);
         List<String> playersWithRole = new ArrayList<>();
 
+        if(totalPlayers % 2 == 0) {
+            return assignRolesIntern(roleAssignment, totalPlayers, playersWithoutRole, playersWithRole);
+        }
+        return assignRolesUneven(roleAssignment, totalPlayers, playersWithoutRole, playersWithRole);
+    }
+
+    private Map<String, Role> assignRolesUneven(Map<String, Role> roleAssignment, long totalPlayers, List<String> playersWithoutRole, List<String> playersWithRole) {
+        var stashedPlayer = playersWithoutRole.get(0);
+        playersWithoutRole.remove(stashedPlayer);
+        totalPlayers = totalPlayers - 1;
+        log.info("Assigning uneven players. Stashed player: %s".formatted(stashedPlayer));
+        var result = assignRolesIntern(roleAssignment, totalPlayers, playersWithoutRole, playersWithRole);
+        result.put(stashedPlayer, Role.INNOCENT);
+        return result;
+    }
+
+    private Map<String, Role> assignRolesIntern(Map<String, Role> roleAssignment, long totalPlayers, List<String> playersWithoutRole, List<String> playersWithRole) {
         // Iterate through all roles
         roleRatios.keySet().forEach(role -> {
             final float roleRatio = roleRatios.get(role);
