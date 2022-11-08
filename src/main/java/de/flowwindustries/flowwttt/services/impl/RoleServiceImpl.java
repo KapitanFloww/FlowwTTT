@@ -23,11 +23,10 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Map<String, Role> assignRoles(List<String> players) {
-
+    public Map<String, Role> assignRoles(final List<String> players) {
         Map<String, Role> roleAssignment = new HashMap<>();
 
-        final long totalPlayers = players.size();
+        long totalPlayers = players.size();
         List<String> playersWithoutRole = new ArrayList<>(players);
         List<String> playersWithRole = new ArrayList<>();
 
@@ -37,26 +36,16 @@ public class RoleServiceImpl implements RoleService {
         return assignRolesUneven(roleAssignment, totalPlayers, playersWithoutRole, playersWithRole);
     }
 
-    private Map<String, Role> assignRolesUneven(Map<String, Role> roleAssignment, long totalPlayers, List<String> playersWithoutRole, List<String> playersWithRole) {
-        var stashedPlayer = playersWithoutRole.get(0);
-        playersWithoutRole.remove(stashedPlayer);
-        totalPlayers = totalPlayers - 1;
-        log.info("Assigning uneven players. Stashed player: %s".formatted(stashedPlayer));
-        var result = assignRolesIntern(roleAssignment, totalPlayers, playersWithoutRole, playersWithRole);
-        result.put(stashedPlayer, Role.INNOCENT);
-        return result;
-    }
-
     private Map<String, Role> assignRolesIntern(Map<String, Role> roleAssignment, long totalPlayers, List<String> playersWithoutRole, List<String> playersWithRole) {
         // Iterate through all roles
         roleRatios.keySet().forEach(role -> {
             final float roleRatio = roleRatios.get(role);
-            int roleOccurrence = (int) Math.ceil(totalPlayers * roleRatio);
+            final int roleOccurrence = (int) Math.ceil(totalPlayers * roleRatio);
 
             log.info("Role: %s, Occurrence: %sx (%s)".formatted(role, roleOccurrence, roleRatio));
 
             // Get a player for each occurrence
-            IntStream.range(0, roleOccurrence).forEach(index -> {
+            IntStream.range(0, roleOccurrence).forEach(it -> {
 
                 final int randomIndex = getRandomIndex(playersWithoutRole.size(), playersWithRole.size());
                 if(playersWithoutRole.size() == 0) {
@@ -75,6 +64,16 @@ public class RoleServiceImpl implements RoleService {
             });
         });
         return roleAssignment;
+    }
+
+    private Map<String, Role> assignRolesUneven(Map<String, Role> roleAssignment, long totalPlayers, List<String> playersWithoutRole, List<String> playersWithRole) {
+        var stashedPlayer = playersWithoutRole.get(rand.nextInt(playersWithoutRole.size() - 1));
+        playersWithoutRole.remove(stashedPlayer);
+        totalPlayers = totalPlayers - 1;
+        log.info("Assigning uneven players. Stashed player: %s".formatted(stashedPlayer));
+        var result = assignRolesIntern(roleAssignment, totalPlayers, playersWithoutRole, playersWithRole);
+        result.put(stashedPlayer, Role.INNOCENT);
+        return result;
     }
 
     private static int getRandomIndex(int playersWithoutSize, int playersWithSize) {

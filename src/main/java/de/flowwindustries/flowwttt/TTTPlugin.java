@@ -20,8 +20,7 @@ import java.util.Objects;
 @Log
 public final class TTTPlugin extends JavaPlugin {
 
-
-    private static final String CONFIG_PATH = "/FlowwTTT/config.yml";
+    private static final String CONFIG_PATH = "./plugins/FlowwTTT/config.yml";
     public static final DecimalFormat COORDINATE_FORMATTER = new DecimalFormat("#.##");
 
     @Getter
