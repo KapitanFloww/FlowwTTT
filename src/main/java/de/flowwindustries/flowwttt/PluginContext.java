@@ -70,9 +70,13 @@ public class PluginContext {
         this.archivedGameRepository = new ArchivedGameRepository(ArchivedGame.class);
 
         log.info("Loading remote data...");
-        log.info("Loading %s lobbies".formatted(lobbyRepository.findAll().size()));
-        log.info("Loading %s arenas".formatted(arenaRepository.findAll().size()));
-        log.info("Loading %s archived games".formatted(archivedGameRepository.findAll().size()));
+        try {
+            log.info("Loading %s lobbies".formatted(lobbyRepository.findAll().size()));
+            log.info("Loading %s arenas".formatted(arenaRepository.findAll().size()));
+            log.info("Loading %s archived games".formatted(archivedGameRepository.findAll().size()));
+        } catch (Exception ex) {
+            log.severe("Could not connect to database: %s".formatted(ex.getMessage()));
+        }
     }
 
     private void setupServices() {

@@ -1,6 +1,5 @@
-package de.flowwindustries.flowwttt.domain;
+package de.flowwindustries.flowwttt;
 
-import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.commands.PlayerMessage;
 import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
@@ -12,6 +11,7 @@ import de.flowwindustries.flowwttt.scheduled.Countdown;
 import de.flowwindustries.flowwttt.scheduled.Idler;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
+import de.flowwindustries.flowwttt.services.RoleService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -24,9 +24,12 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_GRACE_PERIOD_DURATION;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_LOBBY_COUNTDOWN_DURATION;
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_MAX_DURATION;
 import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readInt;
 import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
@@ -39,6 +42,8 @@ import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
 public class GameInstance {
 
     public final int maxGameDuration;
+    public final int lobbyCountDownDuration;
+    public final int gracePeriodDuration;
 
     /**
      * This game's identifier.
@@ -77,7 +82,7 @@ public class GameInstance {
     /**
      * Map of players and their role.
      */
-    private Map<Player, Role> playerRoles;
+    private final Map<Player, Role> playerRoles = new HashMap<>();
 
     /**
      * Current players.
@@ -89,29 +94,16 @@ public class GameInstance {
      */
     private final ChestService chestService;
     private final ArenaService arenaService;
+    private final RoleService roleService;
 
-    public GameInstance(ChestService chestService, ArenaService arenaService) {
+    public GameInstance(ChestService chestService, ArenaService arenaService, RoleService roleService) {
         this.maxGameDuration = readInt(PATH_GAME_MAX_DURATION);
+        this.lobbyCountDownDuration = readInt(PATH_GAME_LOBBY_COUNTDOWN_DURATION);
+        this.gracePeriodDuration = readInt(PATH_GAME_GRACE_PERIOD_DURATION);
         this.chestService = chestService;
         this.arenaService = arenaService;
+        this.roleService = roleService;
         this.setStage(Stage.LOBBY);
-    }
-
-    /**
-     * Initialize the roles for the current players.
-     */
-    public void initializeRoles() {
-        int playerSize = players.size();
-        log.config("Assigning roles for " + playerSize + " players");
-
-        // TODO #4: Assign roles
-        // Call RoleService and fetch the map of roles and players
-        // 10% Detective
-        // 60% Innocent
-        // 30% Traitor
-
-
-
     }
 
     /**
@@ -148,10 +140,10 @@ public class GameInstance {
         if(this.getStage() == stage) {
             return;
         }
-        switch (stage) { //TODO #2 implement logic
+        switch (stage) {
             case LOBBY -> initializeLobby(); // Teleport all players to lobby, set gamemode to adventure
-            case COUNTDOWN -> initializeCountdown();
-            case GRACE_PERIOD -> initializeGracePeriod();
+            case COUNTDOWN -> initializeCountdown(); // Lobby countdown
+            case GRACE_PERIOD -> initializeGracePeriod(); // Count-down grace-period and then assign roles
             case RUNNING -> initializeRunning(); // Disable grace period, keep track of the players
             case ENDGAME -> initializeEndgame(); // 10s countdown to display the results and winner, remove chests, teleport players
             case ARCHIVED -> log.info("Archiving game instance " + this.getIdentifier());
@@ -191,14 +183,43 @@ public class GameInstance {
         // Count down from 30s
         Countdown countdown = new Countdown(TTTPlugin.getInstance(),
                 this.getIdentifier(),
-                30,
-                () -> PlayerMessage.info("Grace Period has started!", getCurrentPlayers()),
+                this.gracePeriodDuration,
+                () -> PlayerMessage.info("Grace Period has started! Roles will be assigned in %s seconds", getCurrentPlayers()),
                 () -> {
                     PlayerMessage.info("Grace Period has ended!", getCurrentPlayers());
+
+                    // Assign Roles
+                    initializeRoles();
+
                     this.setStage(Stage.RUNNING);
                 },
                 t -> PlayerMessage.info("Grace Period ends in " + t.getTimeLeft() + " seconds", getCurrentPlayers()));
         countdown.scheduleCountdown();
+    }
+
+    private void initializeRoles() {
+        int playerSize = players.size();
+        log.config("Assigning roles for " + playerSize + " players");
+        var roleAssignment = roleService.assignRoles(players.stream().map(Player::getName).toList());
+        roleAssignment.forEach((playerName, role) -> this.playerRoles.put(mapPlayer(playerName), role));
+        notifyPlayerRole();
+        log.info("Roles have been assigned");
+    }
+
+    private void notifyPlayerRole() {
+        playerRoles.forEach((player, role) -> {
+            PlayerMessage.success("########################", player);
+            PlayerMessage.success("You are %s".formatted(role), player);
+            PlayerMessage.success("########################", player);
+        });
+    }
+
+    private Player mapPlayer(String playerName) {
+        var playerResult = players.stream().filter(it -> it.getName().equals(playerName)).toList();
+        if(playerResult.size() == 1) {
+            return playerResult.get(0);
+        }
+        throw new IllegalStateException("PlayerResult has invalid size for player: %s".formatted(playerName));
     }
 
     private void initializeRunning() {

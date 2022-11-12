@@ -1,7 +1,7 @@
 package de.flowwindustries.flowwttt.services.impl;
 
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
-import de.flowwindustries.flowwttt.domain.GameInstance;
+import de.flowwindustries.flowwttt.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
@@ -10,6 +10,7 @@ import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
 import de.flowwindustries.flowwttt.services.GameManagerService;
+import de.flowwindustries.flowwttt.services.RoleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
@@ -26,8 +27,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static de.flowwindustries.flowwttt.domain.GameInstance.healAndClearPlayers;
-import static de.flowwindustries.flowwttt.domain.GameInstance.teleportLobbyAll;
+import static de.flowwindustries.flowwttt.GameInstance.healAndClearPlayers;
+import static de.flowwindustries.flowwttt.GameInstance.teleportLobbyAll;
 
 /**
  * Service implementation of {@link GameManagerService}.
@@ -41,11 +42,12 @@ public class GameManagerServiceImpl implements GameManagerService {
 
     private final ChestService chestService;
     private final ArenaService arenaService;
+    private final RoleService roleService;
     private final ArchivedGameRepository archivedGameRepository;
 
     @Override
     public GameInstance newInstance(Lobby lobby) {
-        GameInstance gameInstance = new GameInstance(chestService, arenaService);
+        GameInstance gameInstance = new GameInstance(chestService, arenaService, roleService);
         gameInstance.setIdentifier(UUID.randomUUID().toString());
         gameInstance.setLobby(lobby);
         instances.add(gameInstance);

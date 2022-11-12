@@ -1,7 +1,7 @@
 package de.flowwindustries.flowwttt.commands;
 
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
-import de.flowwindustries.flowwttt.domain.GameInstance;
+import de.flowwindustries.flowwttt.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;

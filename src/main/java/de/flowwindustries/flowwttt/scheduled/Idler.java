@@ -2,7 +2,7 @@ package de.flowwindustries.flowwttt.scheduled;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.commands.PlayerMessage;
-import de.flowwindustries.flowwttt.domain.GameInstance;
+import de.flowwindustries.flowwttt.GameInstance;
 import de.flowwindustries.flowwttt.events.StartInstanceEvent;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import lombok.extern.java.Log;

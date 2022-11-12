@@ -12,7 +12,7 @@ import lombok.extern.java.Log;
 import java.util.Collection;
 import java.util.Optional;
 
-import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_DEFAULT_LOBBY;
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_DEFAULT_LOBBY;
 import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readString;
 import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.write;
 
@@ -54,12 +54,12 @@ public class LobbyServiceImpl implements LobbyService {
     @Override
     public void setDefaultLobby(String lobbyName) {
         log.info("Request to set default lobby name: " + lobbyName);
-        write(PATH_DEFAULT_LOBBY, lobbyName);
+        write(PATH_GAME_DEFAULT_LOBBY, lobbyName);
     }
 
     @Override
     public String getDefaultLobbyName() {
-        return readString(PATH_DEFAULT_LOBBY);
+        return readString(PATH_GAME_DEFAULT_LOBBY);
     }
 
     @Override

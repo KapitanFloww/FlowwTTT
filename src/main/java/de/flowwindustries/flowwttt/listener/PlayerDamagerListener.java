@@ -1,7 +1,7 @@
 package de.flowwindustries.flowwttt.listener;
 
 import de.flowwindustries.flowwttt.commands.PlayerMessage;
-import de.flowwindustries.flowwttt.domain.GameInstance;
+import de.flowwindustries.flowwttt.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;

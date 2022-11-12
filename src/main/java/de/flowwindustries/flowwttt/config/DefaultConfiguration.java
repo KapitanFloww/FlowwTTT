@@ -19,8 +19,10 @@ public class DefaultConfiguration {
     public static final String PATH_DATASOURCE_JDBC_USERNAME = "database.jdbc.username";
     public static final String PATH_DATASOURCE_JDBC_PASSWORD = "database.jdbc.password";
 
-    public static final String PATH_DEFAULT_LOBBY = "lobby.default.name";
+    public static final String PATH_GAME_DEFAULT_LOBBY = "lobby.default.name";
     public static final String PATH_GAME_MAX_DURATION = "game.max-duration";
+    public static final String PATH_GAME_LOBBY_COUNTDOWN_DURATION = "game.lobby-countdown-duration";
+    public static final String PATH_GAME_GRACE_PERIOD_DURATION = "game.grace-period-duration";
     public static final String PATH_GAME_MIN_PLAYERS = "game.players.min";
 
     /**
@@ -40,9 +42,10 @@ public class DefaultConfiguration {
         configuration.addDefault(PATH_DATASOURCE_JDBC_USERNAME, "flowwTTT");
         configuration.addDefault(PATH_DATASOURCE_JDBC_PASSWORD, "MyStr0ng!Passw0rd");
 
-        configuration.addDefault(PATH_DEFAULT_LOBBY, "Lobby");
-
+        configuration.addDefault(PATH_GAME_DEFAULT_LOBBY, "Lobby");
         configuration.addDefault(PATH_GAME_MAX_DURATION, 300);
+        configuration.addDefault(PATH_GAME_GRACE_PERIOD_DURATION, 30);
+        configuration.addDefault(PATH_GAME_LOBBY_COUNTDOWN_DURATION, 30);
         configuration.addDefault(PATH_GAME_MIN_PLAYERS, 4);
         //Save configuration
         configuration.options().copyDefaults(true);
