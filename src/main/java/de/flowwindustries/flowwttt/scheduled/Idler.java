@@ -30,8 +30,8 @@ public class Idler implements Runnable {
 
     @Override
     public void run() {
-        if(instance.getCurrentPlayers().size() >= minRequiredPlayers) {
-            PlayerMessage.info("Game is starting...", instance.getCurrentPlayers());
+        if(instance.getCurrentPlayersActive().size() >= minRequiredPlayers) {
+            PlayerMessage.info("Game is starting...", instance.getCurrentPlayersActive());
             // Start the game
             StartInstanceEvent event = new StartInstanceEvent(instance.getIdentifier(), arenaService.getAll().stream().findAny().get()); // TODO get voted arena instead
             Bukkit.getServer().getPluginManager().callEvent(event);
@@ -40,11 +40,11 @@ public class Idler implements Runnable {
             }
             return;
         }
-        log.info(String.format("Not enough players for instance %s (%s/%s)", this.instance.getIdentifier(), this.instance.getCurrentPlayers().size(), minRequiredPlayers));
-        PlayerMessage.info(String.format("Not enough players (%s/%s). Waiting for players...", this.instance.getCurrentPlayers().size(), minRequiredPlayers), this.instance.getCurrentPlayers());
+        log.info(String.format("Not enough players for instance %s (%s/%s)", instance.getIdentifier(), instance.getCurrentPlayersActive().size(), minRequiredPlayers));
+        PlayerMessage.info(String.format("Not enough players (%s/%s). Waiting for players...", instance.getCurrentPlayersActive().size(), minRequiredPlayers), instance.getCurrentPlayersActive());
     }
 
     public void scheduleIdler() {
-        this.taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 200L, 200L); // 200 ticks = 10 seconds
+        taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 200L, 200L); // 200 ticks = 10 seconds
     }
 }

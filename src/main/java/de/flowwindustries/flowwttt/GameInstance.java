@@ -12,6 +12,7 @@ import de.flowwindustries.flowwttt.scheduled.Idler;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
 import de.flowwindustries.flowwttt.services.RoleService;
+import de.flowwindustries.flowwttt.utils.SpigotParser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -22,11 +23,11 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_GRACE_PERIOD_DURATION;
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_LOBBY_COUNTDOWN_DURATION;
@@ -45,58 +46,34 @@ public class GameInstance {
     public final int lobbyCountDownDuration;
     public final int gracePeriodDuration;
 
-    /**
-     * This game's identifier.
-     */
     @Getter
-    @Setter
     private String identifier;
 
-    /**
-     * The current stage this game is in.
-     */
     @Getter
     private Stage stage;
 
-    /**
-     * The result this game instance has ended.
-     */
-    @Setter
     @Getter
+    @Setter
     private GameResult gameResult;
 
-    /**
-     * The arena this game takes place.
-     */
-    @Setter
     @Getter
+    @Setter
     private Arena arena;
 
-    /**
-     * The lobby the players will be taken after finishing the game.
-     */
-    @Setter
     @Getter
+    @Setter
     private Lobby lobby;
 
-    /**
-     * Map of players and their role.
-     */
     private final Map<Player, Role> playerRoles = new HashMap<>();
 
-    /**
-     * Current players.
-     */
-    private final List<Player> players = new ArrayList<>();
+    private final Map<Player, Role> activePlayers = new HashMap<>();
 
-    /**
-     * Services.
-     */
     private final ChestService chestService;
     private final ArenaService arenaService;
     private final RoleService roleService;
 
     public GameInstance(ChestService chestService, ArenaService arenaService, RoleService roleService) {
+        this.identifier = UUID.randomUUID().toString();
         this.maxGameDuration = readInt(PATH_GAME_MAX_DURATION);
         this.lobbyCountDownDuration = readInt(PATH_GAME_LOBBY_COUNTDOWN_DURATION);
         this.gracePeriodDuration = readInt(PATH_GAME_GRACE_PERIOD_DURATION);
@@ -106,38 +83,53 @@ public class GameInstance {
         this.setStage(Stage.LOBBY);
     }
 
-    /**
-     * Add a player to this game instance.
-     * @param player the player to add
-     */
     public void addPlayer(Player player) {
-        players.add(player);
-        log.config("Added player " + player.getName() + " to game instance " + this.getIdentifier());
+        activePlayers.put(player, Role.PENDING);
+        log.config("Added player " + player.getName() + " to game instance " + identifier);
     }
 
-    /**
-     * Remove a player from this game instance.
-     * @param player the player to remove
-     */
+    public void killPlayer(Player player) {
+        var lobbyLocation = SpigotParser.mapSpawnToLocation(lobby.getLobbySpawn());
+        PlayerMessage.info("You have been killed!", player);
+        player.setHealth(20.0d);
+        player.teleport(lobbyLocation);
+
+        removePlayer(player);
+        recalculateGameStats();
+    }
+
     public void removePlayer(Player player) {
-        players.remove(player);
-        log.config("Removed player " + player.getName() + " to game instance " +  this.getIdentifier());
+        activePlayers.remove(player);
+        log.config("Removed player " + player.getName() + " to game instance " +  identifier);
     }
 
-    /**
-     * Get the current player count of this instance.
-     * @return the current player count
-     */
-    public Collection<Player> getCurrentPlayers() {
-        return this.players;
+    private void recalculateGameStats() {
+        // Check for traitor win
+        var traitors = getCurrentPlayersActive().stream().filter(player -> activePlayers.get(player) == Role.TRAITOR).toList();
+        if(traitors.size() == 0) {
+            initializeInnoWin();
+            return;
+        }
+        // Check for inno win
+        var innocents = getCurrentPlayersActive().stream().filter(player -> activePlayers.get(player) == Role.INNOCENT).toList();
+        var detective = getCurrentPlayersActive().stream().filter(player -> activePlayers.get(player) == Role.DETECTIVE).toList();
+        if(innocents.size() + detective.size() == 0) {
+            initializeTraitorWin();
+            return;
+        }
+        throw new IllegalStateException("Invalid game ending!");
     }
 
-    /**
-     * Set the stage of this game instance.
-     * @param stage the stage to set this instance to
-     */
+    private void initializeInnoWin() {
+        // TODO KapitanFloww set game result + endgame
+    }
+
+    private void initializeTraitorWin() {
+        // TODO KapitanFloww set game result + endgame
+    }
+
     public void setStage(Stage stage) {
-        if(this.getStage() == stage) {
+        if(this.stage == stage) {
             return;
         }
         switch (stage) {
@@ -146,17 +138,16 @@ public class GameInstance {
             case GRACE_PERIOD -> initializeGracePeriod(); // Count-down grace-period and then assign roles
             case RUNNING -> initializeRunning(); // Disable grace period, keep track of the players
             case ENDGAME -> initializeEndgame(); // 10s countdown to display the results and winner, remove chests, teleport players
-            case ARCHIVED -> log.info("Archiving game instance " + this.getIdentifier());
+            case ARCHIVED -> log.info("Archiving game instance " + identifier);
         }
         this.stage = stage;
     }
 
     private void initializeCountdown() {
-        // Teleport players to their spawns
         log.info(String.format("Initializing %s stage", Stage.COUNTDOWN));
-        for(int i=0; i<this.players.size(); i++) {
-            Player player = this.players.get(i);
-            PlayerSpawn spawn = this.getArena().getPlayerSpawns().get(i);
+        for(int i=0; i < getCurrentPlayersActive().size(); i++) {
+            Player player = getCurrentPlayersActive().get(i);
+            PlayerSpawn spawn = arena.getPlayerSpawns().get(i);
 
             World world = Bukkit.getWorld(spawn.getWorldName());
             Location location = new Location(world, spawn.getX(), spawn.getY(), spawn.getZ(), spawn.getYaw(), spawn.getPitch());
@@ -164,46 +155,83 @@ public class GameInstance {
             player.teleport(location);
             player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
         }
-        // Count down from 30s
         Countdown countdown = new Countdown(TTTPlugin.getInstance(),
-                this.getIdentifier(),
-                30,
-                () -> PlayerMessage.info("The match will start soon! Get ready!", getCurrentPlayers()),
+                identifier,
+                lobbyCountDownDuration,
+                () -> PlayerMessage.info("The match will start soon! Get ready!", getCurrentPlayersActive()),
                 () -> {
-                    PlayerMessage.info("The match has started!", getCurrentPlayers());
-                    this.setStage(Stage.GRACE_PERIOD);
+                    PlayerMessage.info("The match has started!", getCurrentPlayersActive());
+                    setStage(Stage.GRACE_PERIOD);
                 },
-                t -> PlayerMessage.info("Match will start in " + t.getTimeLeft() + " seconds", getCurrentPlayers()));
+                t -> PlayerMessage.info("Match will start in " + t.getTimeLeft() + " seconds", getCurrentPlayersActive()));
         countdown.scheduleCountdown();
-        chestService.spawnChests(this.getArena());
+        chestService.spawnChests(arena);
     }
 
     private void initializeGracePeriod() {
         log.info(String.format("Initialize %s stage", Stage.GRACE_PERIOD));
-        // Count down from 30s
         Countdown countdown = new Countdown(TTTPlugin.getInstance(),
-                this.getIdentifier(),
-                this.gracePeriodDuration,
-                () -> PlayerMessage.info("Grace Period has started! Roles will be assigned in %s seconds", getCurrentPlayers()),
+                identifier,
+                gracePeriodDuration,
+                () -> PlayerMessage.info("Grace Period has started! Roles will be assigned in %s seconds", getCurrentPlayersActive()),
                 () -> {
-                    PlayerMessage.info("Grace Period has ended!", getCurrentPlayers());
-
-                    // Assign Roles
+                    PlayerMessage.info("Grace Period has ended!", getCurrentPlayersActive());
                     initializeRoles();
-
-                    this.setStage(Stage.RUNNING);
+                    setStage(Stage.RUNNING);
                 },
-                t -> PlayerMessage.info("Grace Period ends in " + t.getTimeLeft() + " seconds", getCurrentPlayers()));
+                t -> PlayerMessage.info("Grace Period ends in " + t.getTimeLeft() + " seconds", getCurrentPlayersActive()));
         countdown.scheduleCountdown();
     }
 
     private void initializeRoles() {
-        int playerSize = players.size();
-        log.config("Assigning roles for " + playerSize + " players");
-        var roleAssignment = roleService.assignRoles(players.stream().map(Player::getName).toList());
-        roleAssignment.forEach((playerName, role) -> this.playerRoles.put(mapPlayer(playerName), role));
+        log.config("Assigning roles for " + getPlayerAmount() + " players");
+        var roleAssignment = roleService.assignRoles(getCurrentPlayersActive().stream()
+                .map(Player::getName)
+                .toList());
+        roleAssignment.forEach((playerName, role) -> playerRoles.put(mapPlayer(playerName), role));
         notifyPlayerRole();
         log.info("Roles have been assigned");
+    }
+
+    private void initializeRunning() {
+        log.info(String.format("Initialize %s stage", Stage.RUNNING));
+        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                identifier,
+                maxGameDuration,
+                () -> {},
+                () -> {
+                    PlayerMessage.info("Time has run out. Innocents win!", getCurrentPlayersActive());
+                    getCurrentPlayersActive().forEach(player -> player.setLevel(0));
+                    gameResult = GameResult.TIME_OUT;
+                    setStage(Stage.ENDGAME);
+                },
+                t -> getCurrentPlayersActive().forEach(player -> player.setLevel(t.getTimeLeft()))
+        );
+        countdown.scheduleCountdown();
+    }
+
+    private void initializeEndgame() {
+        chestService.deSpawnChests(arena);
+        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+                identifier,
+                10,
+                () -> {
+                    PlayerMessage.success("*********************************", getCurrentPlayersActive());
+                    if(gameResult == GameResult.INNOCENT_WIN || gameResult == GameResult.TIME_OUT) {
+                        PlayerMessage.success("The INNOCENTS win", getCurrentPlayersActive());
+                    } else {
+                        PlayerMessage.warn("The TRAITORS win", getCurrentPlayersActive());
+                    }
+                    healAndClearPlayers(getCurrentPlayersActive());
+                    teleportLobbyAll(lobby.getLobbySpawn(), getCurrentPlayersActive());
+                },
+                () -> {
+                    setStage(Stage.ARCHIVED);
+                    // TODO create a new game instance and assign all online players to it
+                },
+                t -> {}
+        );
+        countdown.scheduleCountdown();
     }
 
     private void notifyPlayerRole() {
@@ -215,65 +243,11 @@ public class GameInstance {
     }
 
     private Player mapPlayer(String playerName) {
-        var playerResult = players.stream().filter(it -> it.getName().equals(playerName)).toList();
+        var playerResult = getCurrentPlayersActive().stream().filter(it -> it.getName().equals(playerName)).toList();
         if(playerResult.size() == 1) {
             return playerResult.get(0);
         }
-        throw new IllegalStateException("PlayerResult has invalid size for player: %s".formatted(playerName));
-    }
-
-    private void initializeRunning() {
-        log.info(String.format("Initialize %s stage", Stage.RUNNING));
-        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
-                this.getIdentifier(),
-                maxGameDuration,
-                () -> {},
-                () -> {
-                    PlayerMessage.info("Time has run out. Innocents win!", this.getCurrentPlayers());
-                    this.getCurrentPlayers().forEach(player -> player.setLevel(0));
-                    this.setGameResult(GameResult.TIME_OUT);
-                    this.setStage(Stage.ENDGAME);
-                },
-                t -> this.getCurrentPlayers().forEach(player -> player.setLevel(t.getTimeLeft()))
-        );
-        countdown.scheduleCountdown();
-
-        // TODO
-        // Monitor player deaths
-        // When killer traitor and victim innocent or detective == good
-        // When killer traitor and victim traitor == not good
-        // When killer innocent and victim innocent or detective == not good
-        // When killer innocent and victim traitor == very good
-
-        // When all killer dead == inno win or by time
-        // When all inno dead = traitor win
-    }
-
-    private void initializeEndgame() {
-        this.chestService.deSpawnChests(this.getArena());
-        GameResult result = this.getGameResult();
-
-        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
-                this.getIdentifier(),
-                10,
-                () -> {
-                    PlayerMessage.success("*********************************", this.getCurrentPlayers());
-                    if(result == GameResult.INNOCENT_WIN || result == GameResult.TIME_OUT) {
-                        PlayerMessage.success("The INNOCENTS win", this.getCurrentPlayers());
-                    } else {
-                        PlayerMessage.warn("The TRAITORS win", this.getCurrentPlayers());
-                    }
-                    healAndClearPlayers(this.getCurrentPlayers());
-                    teleportLobbyAll(this.getLobby().getLobbySpawn(), this.getCurrentPlayers());
-                    // TODO set karma
-                },
-                () -> {
-                    this.setStage(Stage.ARCHIVED);
-                    // TODO create a new game instance and assign all online players to it
-                },
-                t -> {}
-        );
-        countdown.scheduleCountdown();
+        throw new IllegalStateException("Player %s not found in active players".formatted(playerName));
     }
 
     public static void teleportLobbyAll(PlayerSpawn lobbySpawn, Collection<Player> players) {
@@ -292,5 +266,13 @@ public class GameInstance {
     private void initializeLobby() {
         Idler lobbyIdler = new Idler(TTTPlugin.getInstance(), this, arenaService);
         lobbyIdler.scheduleIdler();
+    }
+
+    public int getPlayerAmount() {
+        return this.activePlayers.keySet().size();
+    }
+
+    public List<Player> getCurrentPlayersActive() {
+        return this.activePlayers.keySet().stream().toList();
     }
 }

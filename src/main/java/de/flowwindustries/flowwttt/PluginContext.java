@@ -3,6 +3,7 @@ package de.flowwindustries.flowwttt;
 import de.flowwindustries.flowwttt.config.DefaultConfiguration;
 import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
+import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
@@ -12,16 +13,20 @@ import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import de.flowwindustries.flowwttt.services.LobbyService;
+import de.flowwindustries.flowwttt.services.RoleService;
 import de.flowwindustries.flowwttt.services.impl.ArenaServiceImpl;
 import de.flowwindustries.flowwttt.services.impl.ChestServiceImpl;
 import de.flowwindustries.flowwttt.services.impl.GameManagerServiceImpl;
 import de.flowwindustries.flowwttt.services.impl.LobbyServiceImpl;
+import de.flowwindustries.flowwttt.services.impl.RoleServiceImpl;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Log
 @Getter
@@ -42,6 +47,7 @@ public class PluginContext {
     private LobbyService lobbyService;
     private GameManagerService gameManagerService;
     private ChestService chestService;
+    private RoleService roleService;
 
     public PluginContext(FileConfiguration fileConfiguration, File configFile) {
         context = this;
@@ -80,11 +86,19 @@ public class PluginContext {
     }
 
     private void setupServices() {
-        // Services
         this.chestService = new ChestServiceImpl();
         this.arenaService = new ArenaServiceImpl(arenaRepository);
         this.lobbyService = new LobbyServiceImpl(arenaService, lobbyRepository);
-        this.gameManagerService = new GameManagerServiceImpl(chestService, arenaService, archivedGameRepository);
+        this.roleService = new RoleServiceImpl(getRoleRatios());
+        this.gameManagerService = new GameManagerServiceImpl(chestService, arenaService, roleService, archivedGameRepository);
+    }
+
+    private static Map<Role, Float> getRoleRatios() {
+        var ratios = new HashMap<Role, Float>();
+        ratios.put(Role.TRAITOR, 0.30f);
+        ratios.put(Role.DETECTIVE, 0.10f);
+        ratios.put(Role.INNOCENT, 0.60f);
+        return ratios;
     }
 
 }

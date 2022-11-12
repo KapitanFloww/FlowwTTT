@@ -126,9 +126,9 @@ public class GameManagerCommand extends AbstractCommand {
         player.sendMessage(String.format(YELLOW + "Stage: %s", instance.getStage()));
         player.sendMessage(String.format(YELLOW + "Lobby: %s", getLobbyName(instance)));
         player.sendMessage(String.format(YELLOW + "Arena: %s", getArenaName(instance)));
-        player.sendMessage(String.format(YELLOW + "Players: %s:", instance.getCurrentPlayers().size()));
+        player.sendMessage(String.format(YELLOW + "Players: %s:", instance.getCurrentPlayersActive().size()));
         player.sendMessage(String.format(YELLOW + "Result: %s:", instance.getGameResult()));
-        instance.getCurrentPlayers().forEach(playerInInstance -> player.sendMessage(YELLOW + playerInInstance.getName()));
+        instance.getCurrentPlayersActive().forEach(playerInInstance -> player.sendMessage(YELLOW + playerInInstance.getName()));
     }
 
     private void listInstances(Player player) {
@@ -140,7 +140,7 @@ public class GameManagerCommand extends AbstractCommand {
                             gameInstance.getStage(),
                             getLobbyName(gameInstance),
                             getArenaName(gameInstance),
-                            gameInstance.getCurrentPlayers().size())
+                            gameInstance.getCurrentPlayersActive().size())
             );
             }
         );
@@ -169,7 +169,7 @@ public class GameManagerCommand extends AbstractCommand {
 
     @Override
     protected boolean consoleCommand(String[] args) {
-        log.info("Not yet implemented!");
+        // TODO KapitanFloww implement console command logic
         return false;
     }
 
@@ -177,13 +177,13 @@ public class GameManagerCommand extends AbstractCommand {
         if(gameInstance.getLobby() != null) {
             return gameInstance.getLobby().getLobbyName();
         }
-        return "null";
+        throw new IllegalArgumentException("Lobby must not be null");
     }
 
     private static String getArenaName(GameInstance gameInstance) {
         if(gameInstance.getArena() != null) {
             return gameInstance.getArena().getArenaName();
         }
-        return "null";
+        throw new IllegalArgumentException("Arena must not be null");
     }
 }

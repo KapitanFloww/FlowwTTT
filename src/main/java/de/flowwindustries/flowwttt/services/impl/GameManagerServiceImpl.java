@@ -1,7 +1,7 @@
 package de.flowwindustries.flowwttt.services.impl;
 
-import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.GameInstance;
+import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static de.flowwindustries.flowwttt.GameInstance.healAndClearPlayers;
 import static de.flowwindustries.flowwttt.GameInstance.teleportLobbyAll;
@@ -48,7 +47,6 @@ public class GameManagerServiceImpl implements GameManagerService {
     @Override
     public GameInstance newInstance(Lobby lobby) {
         GameInstance gameInstance = new GameInstance(chestService, arenaService, roleService);
-        gameInstance.setIdentifier(UUID.randomUUID().toString());
         gameInstance.setLobby(lobby);
         instances.add(gameInstance);
         log.info("Created " +
@@ -131,8 +129,8 @@ public class GameManagerServiceImpl implements GameManagerService {
             return;
         }
 
-        healAndClearPlayers(instance.getCurrentPlayers());
-        teleportLobbyAll(instance.getLobby().getLobbySpawn(), instance.getCurrentPlayers());
+        healAndClearPlayers(instance.getCurrentPlayersActive());
+        teleportLobbyAll(instance.getLobby().getLobbySpawn(), instance.getCurrentPlayersActive());
 
         List<Integer> instanceTasks = GameManagerService.getInstanceTask(instance.getIdentifier());
         if(instanceTasks != null) {
@@ -150,7 +148,7 @@ public class GameManagerServiceImpl implements GameManagerService {
                 instance.getStage(),
                 instance.getLobby().getLobbyName(),
                 instance.getArena().getArenaName(),
-                instance.getCurrentPlayers().toString(),
+                instance.getCurrentPlayersActive().toString(),
                 Instant.now(Clock.system(ZoneId.systemDefault())))
         );
     }

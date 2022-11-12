@@ -27,6 +27,8 @@ lobby:
     name: Lobby
 
 game:
+  grace-period-duration: 30
+  lobby-countdown-duration: 30
   max-duration: 300
   players:
     min: 4

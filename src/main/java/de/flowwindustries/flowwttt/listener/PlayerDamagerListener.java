@@ -55,7 +55,7 @@ public class PlayerDamagerListener implements Listener {
         Player victim = (Player) event.getEntity();
         Player killer = (Player) event.getDamager();
 
-        // Check if victim would have died
+        // Check if victim had died
         if(victim.getHealth() > 0) {
             return;
         }
@@ -74,7 +74,7 @@ public class PlayerDamagerListener implements Listener {
         handleKiller(victim, killer, instance);
 
         // Remove victim from the instance
-        instance.getCurrentPlayers().remove(victim);
+        instance.killPlayer(victim);
     }
 
     private void handleKiller(Player victim, Player killer, GameInstance instance) {
