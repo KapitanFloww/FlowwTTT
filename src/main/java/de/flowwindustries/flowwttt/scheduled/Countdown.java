@@ -1,7 +1,6 @@
 package de.flowwindustries.flowwttt.scheduled;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
-import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
@@ -89,7 +88,6 @@ public class Countdown implements Runnable {
      */
     public void scheduleCountdown() {
         this.taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0L, 20L); // Run every 20 ticks = 1 second
-        GameManagerService.addInstanceTaskId(this.instanceId, this.taskId);
     }
 
     /**
@@ -99,7 +97,6 @@ public class Countdown implements Runnable {
         if(taskId != null) {
             log.info("Canceling task %s".formatted(taskId));
             Bukkit.getScheduler().cancelTask(taskId);
-            GameManagerService.removeInstanceTaskId(this.instanceId, this.taskId);
         }
     }
 }

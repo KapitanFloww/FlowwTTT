@@ -15,7 +15,6 @@ import de.flowwindustries.flowwttt.services.RoleService;
 import de.flowwindustries.flowwttt.utils.SpigotParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
@@ -110,16 +109,6 @@ public class GameManagerServiceImpl implements GameManagerService {
         instance.setGameModeAll(GameMode.ADVENTURE);
         var lobbyLocation = SpigotParser.mapSpawnToLocation(instance.getLobby().getLobbySpawn());
         instance.teleportAll(lobbyLocation);
-
-        // TODO extract to stages
-        List<Integer> instanceTasks = GameManagerService.getInstanceTask(instance.getIdentifier());
-        if(instanceTasks != null) {
-            instanceTasks.forEach(taskId -> {
-                log.info("Canceling task " + taskId);
-                Bukkit.getScheduler().cancelTask(taskId);
-            });
-        }
-        GameManagerService.clearTasks(instance.getIdentifier());
     }
 
     @Override
