@@ -24,6 +24,15 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Map<String, Role> assignRoles(final List<String> players) {
+        // Check edge cases
+        if (players.size() == 1) {
+            return getSinglePlayerAssignment(players);
+        } else if (players.size() == 2) {
+            return getDuoPlayerAssignment(players);
+        } else if (players.size() == 3) {
+            return getTrioPlayerAssignment(players);
+        }
+
         Map<String, Role> roleAssignment = new HashMap<>();
 
         long totalPlayers = players.size();
@@ -84,4 +93,27 @@ public class RoleServiceImpl implements RoleService {
             return 0;
         }
     }
+
+    private static Map<String, Role> getSinglePlayerAssignment(List<String> playersWithoutRole) {
+        return Map.of(
+                playersWithoutRole.get(0), Role.INNOCENT
+        );
+    }
+
+    private static Map<String, Role> getDuoPlayerAssignment(List<String> playersWithoutRole) {
+        return Map.of(
+                playersWithoutRole.get(0), Role.INNOCENT,
+                playersWithoutRole.get(1), Role.TRAITOR
+        );
+    }
+
+    private static Map<String, Role> getTrioPlayerAssignment(List<String> playersWithoutRole) {
+        return Map.of(
+                playersWithoutRole.get(0), Role.INNOCENT,
+                playersWithoutRole.get(1), Role.DETECTIVE,
+                playersWithoutRole.get(2), Role.DETECTIVE
+        );
+    }
 }
+
+

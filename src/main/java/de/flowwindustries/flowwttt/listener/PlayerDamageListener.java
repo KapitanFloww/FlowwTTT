@@ -1,12 +1,10 @@
 package de.flowwindustries.flowwttt.listener;
 
-import de.flowwindustries.flowwttt.commands.PlayerMessage;
-import de.flowwindustries.flowwttt.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
+import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,13 +17,13 @@ import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
  * Listen to a player death.
  */
 @RequiredArgsConstructor
-public class PlayerDamagerListener implements Listener {
+public class PlayerDamageListener implements Listener {
 
     private final GameManagerService gameManagerService;
 
     /**
-     * Block damage of players when they are in a valid game instance and the stage is {@link Stage#COUNTDOWN}.
-     * @param event the event to handle
+     * Block damage to players when they are in a valid game instance and the stage is not {@link Stage#RUNNING}.
+     * @param event - the event to handle
      */
     @EventHandler
     public void onPlayerDamage(PlayerInteractEntityEvent event) {
@@ -33,7 +31,7 @@ public class PlayerDamagerListener implements Listener {
         if(instance == null) {
             return;
         }
-        if(instance.getStage() == Stage.GRACE_PERIOD) {
+        if(instance.getCurrentStage().getName() != Stage.RUNNING) {
             if(event.getRightClicked() instanceof Player) {
                 event.setCancelled(true);
             }
@@ -42,7 +40,7 @@ public class PlayerDamagerListener implements Listener {
 
     /**
      * Handle the moment a player's health exceeds 0
-     * @param event the event to handle
+     * @param event - the event to handle
      */
     @EventHandler
     public void handlePlayerDeath(EntityDamageByEntityEvent event) {
@@ -65,7 +63,7 @@ public class PlayerDamagerListener implements Listener {
         if(instance == null) {
             return;
         }
-        if(instance.getStage() != Stage.RUNNING) {
+        if(instance.getCurrentStage().getName() != Stage.RUNNING) {
             return;
         }
 
@@ -78,15 +76,16 @@ public class PlayerDamagerListener implements Listener {
     }
 
     private void handleKiller(Player victim, Player killer, GameInstance instance) {
-        PlayerMessage.info(String.format("You killed %s [Role: %s]" + victim.getName(), "TODO"), killer); // TODO Add player role
-        // TODO Get Player Roles and add or remove karma accordingly
+        var role = instance.getPlayerRoles().get(victim);
+        instance.notifyPlayer(killer, "You killed %s [%s]".formatted(victim.getName(), role));
+        // TODO KapitanFLoww add or remove karma
     }
 
     private void handleVictim(Player victim, Player killer, GameInstance instance) {
-        victim.setHealth(20.0d);
-        victim.setGameMode(GameMode.SPECTATOR);
-        Location lobbyLocation = mapSpawnToLocation(instance.getLobby().getLobbySpawn());
-        victim.teleport(lobbyLocation);
-        PlayerMessage.info("You have been murdered by " + killer.getName(), victim);
+        var lobbyLocation = mapSpawnToLocation(instance.getLobby().getLobbySpawn());
+        instance.heal(victim);
+        instance.setGameMode(victim, GameMode.SPECTATOR);
+        instance.teleport(victim, lobbyLocation);
+        instance.notifyPlayer(victim, "You have been murdered by %s".formatted(killer.getName()));
     }
 }

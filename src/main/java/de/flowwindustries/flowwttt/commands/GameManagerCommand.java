@@ -1,7 +1,7 @@
 package de.flowwindustries.flowwttt.commands;
 
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
-import de.flowwindustries.flowwttt.GameInstance;
+import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
@@ -116,14 +116,14 @@ public class GameManagerCommand extends AbstractCommand {
 
     private void createInstance(Player player, String lobbyName) {
         Lobby lobby = lobbyService.getLobbySafe(lobbyName);
-        GameInstance instance = gameManagerService.newInstance(lobby);
+        GameInstance instance = gameManagerService.createInstance(lobby);
         PlayerMessage.success("Created new game instance with id: " + instance.getIdentifier(), player);
     }
 
     private void infoInstance(Player player, String instanceId) {
         GameInstance instance = gameManagerService.getGameInstanceSafe(instanceId);
         PlayerMessage.info(String.format(GOLD + "Instance %s Details:", instance.getIdentifier()), player);
-        player.sendMessage(String.format(YELLOW + "Stage: %s", instance.getStage()));
+        player.sendMessage(String.format(YELLOW + "Stage: %s", instance.getCurrentStage().getName()));
         player.sendMessage(String.format(YELLOW + "Lobby: %s", getLobbyName(instance)));
         player.sendMessage(String.format(YELLOW + "Arena: %s", getArenaName(instance)));
         player.sendMessage(String.format(YELLOW + "Players: %s:", instance.getCurrentPlayersActive().size()));
@@ -137,7 +137,7 @@ public class GameManagerCommand extends AbstractCommand {
         instances.forEach(gameInstance -> {
             player.sendMessage(String.format(YELLOW + "[%s]: %s %s %s (%s)",
                             gameInstance.getIdentifier(),
-                            gameInstance.getStage(),
+                            gameInstance.getCurrentStage().getName(),
                             getLobbyName(gameInstance),
                             getArenaName(gameInstance),
                             gameInstance.getCurrentPlayersActive().size())
@@ -177,13 +177,13 @@ public class GameManagerCommand extends AbstractCommand {
         if(gameInstance.getLobby() != null) {
             return gameInstance.getLobby().getLobbyName();
         }
-        throw new IllegalArgumentException("Lobby must not be null");
+        return "Lobby not yet set";
     }
 
     private static String getArenaName(GameInstance gameInstance) {
         if(gameInstance.getArena() != null) {
             return gameInstance.getArena().getArenaName();
         }
-        throw new IllegalArgumentException("Arena must not be null");
+        return "Arena not yet set";
     }
 }

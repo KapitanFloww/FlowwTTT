@@ -1,7 +1,7 @@
 package de.flowwindustries.flowwttt.services;
 
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
-import de.flowwindustries.flowwttt.GameInstance;
+import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
@@ -29,7 +29,7 @@ public interface GameManagerService {
      * @param lobby the lobby the players start and return to
      * @return the create instance
      */
-    GameInstance newInstance(Lobby lobby);
+    GameInstance createInstance(Lobby lobby);
 
     /**
      * Null-safe way to get a game instance by its identifier.

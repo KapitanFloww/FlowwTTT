@@ -1,6 +1,6 @@
 package de.flowwindustries.flowwttt.listener;
 
-import de.flowwindustries.flowwttt.GameInstance;
+import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class PlayerMoveListener implements Listener {
         if(instance == null) {
             return;
         }
-        if(instance.getStage() != Stage.COUNTDOWN) {
+        if(instance.getCurrentStage().getName() != Stage.COUNTDOWN) {
             return;
         }
         event.setCancelled(true);
