@@ -75,6 +75,7 @@ public class GameInstance {
         log.config("Adding player %s to game instance %s".formatted(player.getName(), identifier));
     }
 
+    @Deprecated
     public void killPlayer(Player player) {
         var lobbyLocation = SpigotParser.mapSpawnToLocation(lobby.getLobbySpawn());
         teleport(player, lobbyLocation);
@@ -83,6 +84,7 @@ public class GameInstance {
         notifyPlayer(player, "You have been killed!");
     }
 
+    @Deprecated
     public void removePlayer(Player player) {
         activePlayers.remove(player);
         log.config("Removed player " + player.getName() + " to game instance " +  identifier);
