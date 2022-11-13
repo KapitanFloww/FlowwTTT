@@ -26,6 +26,8 @@ public class CountdownStage implements GameStage {
     private final GameInstance gameInstance;
     private final ChestService chestService;
 
+    private Countdown lobbyCountdown;
+
     public CountdownStage(GameInstance gameInstance, ChestService chestService) {
         this.countDownDuration = readInt(PATH_GAME_LOBBY_COUNTDOWN_DURATION);
         this.gameInstance = Objects.requireNonNull(gameInstance);
@@ -55,7 +57,7 @@ public class CountdownStage implements GameStage {
             player.teleport(location);
             player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
         }
-        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+        lobbyCountdown = new Countdown(TTTPlugin.getInstance(),
                 gameInstance.getIdentifier(),
                 countDownDuration,
                 () -> gameInstance.notifyAllPlayers("The match will start soon! Get ready!"),
@@ -64,13 +66,15 @@ public class CountdownStage implements GameStage {
                     gameInstance.startNext();
                 },
                 t -> gameInstance.notifyAllPlayers("Match will start in %s seconds".formatted(t.getTimeLeft())));
-        countdown.scheduleCountdown();
-        chestService.spawnChests(gameInstance.getArena());
+        lobbyCountdown.scheduleCountdown();
 
+        // De-spawn Chests
+        chestService.spawnChests(gameInstance.getArena());
     }
 
     @Override
     public void endStage() {
         log.info("%s stage ends for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
+        lobbyCountdown.cancel();
     }
 }

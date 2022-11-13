@@ -1,4 +1,4 @@
-package de.flowwindustries.flowwttt.listener;
+package de.flowwindustries.flowwttt.game.listener;
 
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.game.GameInstance;

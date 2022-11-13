@@ -64,6 +64,7 @@ public class GameInstance {
         this.roleService = roleService;
         this.archivedGameRepository = Objects.requireNonNull(archivedGameRepository);
         this.currentStage = getGameStage(Stage.LOBBY);
+        this.currentStage.beginStage();
     }
 
     public void addPlayer(Player player) {

@@ -1,6 +1,7 @@
 package de.flowwindustries.flowwttt.game.stages;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
+import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.game.GameStage;
@@ -18,6 +19,8 @@ public class EndgameStage implements GameStage {
     private final GameInstance gameInstance;
     private final ChestService chestService;
 
+    private Countdown endgameCountdown;
+
     public EndgameStage(GameInstance gameInstance, ChestService chestService) {
         this.gameInstance = Objects.requireNonNull(gameInstance);
         this.chestService = Objects.requireNonNull(chestService);
@@ -33,16 +36,17 @@ public class EndgameStage implements GameStage {
         return Stage.ARCHIVED;
     }
 
-    /**
-     * PlayerMessage.info("Time has run out. Innocents win!", gameInstance.getCurrentPlayersActive());
-     *                     gameInstance.getCurrentPlayersActive().forEach(player -> player.setLevel(0));
-     */
-
     @Override
     public void beginStage() {
         log.info("%s stage has begun for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
         chestService.deSpawnChests(gameInstance.getArena());
-        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+
+        if(gameInstance.getGameResult() == GameResult.PENDING) {
+            log.warning("GameResult still on %s. Changing to %s".formatted(GameResult.PENDING, GameResult.CANCELED));
+            gameInstance.setGameResult(GameResult.CANCELED);
+        }
+
+        endgameCountdown = new Countdown(TTTPlugin.getInstance(),
                 gameInstance.getIdentifier(),
                 10,
                 () -> {
@@ -53,12 +57,13 @@ public class EndgameStage implements GameStage {
                 gameInstance::startNext,
                 t -> {}
         );
-        countdown.scheduleCountdown();
+        endgameCountdown.scheduleCountdown();
     }
 
     @Override
     public void endStage() {
         log.info("%s stage ends for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
+        endgameCountdown.cancel();
 
         gameInstance.healAll();
         gameInstance.clearAll();

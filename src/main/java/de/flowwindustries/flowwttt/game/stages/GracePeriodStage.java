@@ -23,6 +23,8 @@ public class GracePeriodStage implements GameStage {
     private final GameInstance gameInstance;
     private final RoleService roleService;
 
+    private Countdown gracePeriodCountdown;
+
     public GracePeriodStage(GameInstance gameInstance, RoleService roleService) {
         this.gracePeriodDuration = readInt(PATH_GAME_GRACE_PERIOD_DURATION);
         this.gameInstance = Objects.requireNonNull(gameInstance);
@@ -42,7 +44,7 @@ public class GracePeriodStage implements GameStage {
     @Override
     public void beginStage() {
         log.info("%s stage has begun for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
-        Countdown countdown = new Countdown(TTTPlugin.getInstance(),
+        gracePeriodCountdown = new Countdown(TTTPlugin.getInstance(),
                 gameInstance.getIdentifier(),
                 gracePeriodDuration,
                 () -> gameInstance.notifyAllPlayers("Grace Period has started! Roles will be assigned in %s seconds".formatted(gracePeriodDuration)),
@@ -51,13 +53,14 @@ public class GracePeriodStage implements GameStage {
                     gameInstance.startNext();
                 },
                 t -> gameInstance.notifyAllPlayers("Grace Period ends in %s seconds".formatted(t.getTimeLeft())));
-        countdown.scheduleCountdown();
+        gracePeriodCountdown.scheduleCountdown();
     }
 
     @Override
     public void endStage() {
         log.info("%s stage ends for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
         assignRoles();
+        gracePeriodCountdown.cancel();
     }
 
     private void assignRoles() {

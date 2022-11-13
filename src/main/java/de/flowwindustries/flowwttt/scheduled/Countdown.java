@@ -2,8 +2,8 @@ package de.flowwindustries.flowwttt.scheduled;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.services.GameManagerService;
-import de.flowwindustries.flowwttt.services.impl.GameManagerServiceImpl;
 import lombok.Getter;
+import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
 
 import java.util.function.Consumer;
@@ -13,6 +13,7 @@ import java.util.function.Consumer;
  * Simply create a new instance of this class and call {@code scheduleCountdown()}.
  * Based on <a href="https://www.spigotmc.org/threads/creating-a-countdown.266702/">ExpDev from Spigotmc.org</a>
  */
+@Log
 public class Countdown implements Runnable {
 
     /**
@@ -74,11 +75,7 @@ public class Countdown implements Runnable {
     public void run() {
         if(timeLeft < 1) {
             afterCountdown.run();
-            if(taskId != null) {
-                Bukkit.getScheduler().cancelTask(taskId);
-                GameManagerService.removeInstanceTaskId(this.instanceId, this.taskId);
-                return;
-            }
+            cancel();
         }
         if(time == timeLeft) { // Start
             beforeCountdown.run();
@@ -93,5 +90,16 @@ public class Countdown implements Runnable {
     public void scheduleCountdown() {
         this.taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0L, 20L); // Run every 20 ticks = 1 second
         GameManagerService.addInstanceTaskId(this.instanceId, this.taskId);
+    }
+
+    /**
+     * Cancel this countdown.
+     */
+    public void cancel() {
+        if(taskId != null) {
+            log.info("Canceling task %s".formatted(taskId));
+            Bukkit.getScheduler().cancelTask(taskId);
+            GameManagerService.removeInstanceTaskId(this.instanceId, this.taskId);
+        }
     }
 }

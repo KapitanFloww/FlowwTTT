@@ -3,9 +3,11 @@ package de.flowwindustries.flowwttt;
 import de.flowwindustries.flowwttt.commands.ArenaCommand;
 import de.flowwindustries.flowwttt.commands.GameManagerCommand;
 import de.flowwindustries.flowwttt.commands.LobbyCommand;
-import de.flowwindustries.flowwttt.listener.PlayerDamageListener;
-import de.flowwindustries.flowwttt.listener.PlayerMoveListener;
-import de.flowwindustries.flowwttt.listener.StartInstanceListener;
+import de.flowwindustries.flowwttt.commands.debug.RunningTasksCommand;
+import de.flowwindustries.flowwttt.game.listener.MatchEndListener;
+import de.flowwindustries.flowwttt.game.listener.PlayerDamageListener;
+import de.flowwindustries.flowwttt.game.listener.PlayerMoveListener;
+import de.flowwindustries.flowwttt.game.listener.StartInstanceListener;
 import de.flowwindustries.flowwttt.repository.AbstractRepository;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -42,6 +44,7 @@ public final class TTTPlugin extends JavaPlugin {
     }
 
     private void setupCommands() {
+        Objects.requireNonNull(this.getCommand("tasks")).setExecutor(new RunningTasksCommand("ttt.debug"));
         Objects.requireNonNull(this.getCommand("arena")).setExecutor(new ArenaCommand("ttt.arena", context.getArenaService()));
         Objects.requireNonNull(this.getCommand("lobby")).setExecutor(new LobbyCommand("ttt.lobby", context.getLobbyService()));
         Objects.requireNonNull(this.getCommand("gm")).setExecutor(new GameManagerCommand("ttt.gm",
@@ -53,5 +56,6 @@ public final class TTTPlugin extends JavaPlugin {
         pluginManager.registerEvents(new PlayerMoveListener(context.getGameManagerService()), this);
         pluginManager.registerEvents(new PlayerDamageListener(context.getGameManagerService()), this);
         pluginManager.registerEvents(new StartInstanceListener(context.getGameManagerService()), this);
+        pluginManager.registerEvents(new MatchEndListener(context.getGameManagerService()), this);
     }
 }

@@ -16,3 +16,6 @@ commands:
   gm:
     description: GameManager command to manage game instances
     permission: ttt.gm
+  tasks:
+    description: Debug command to display running tasks
+    permission: ttt.debug
