@@ -66,7 +66,7 @@ public class GameManagerServiceImpl implements GameManagerService {
             throw new IllegalStateException("Instance is already running. Current stage: %s".formatted(instance.getCurrentStage().getName()));
         }
         instance.setArena(arena);
-        instance.startNext(); // will trigger lobby countdown
+        instance.startNext(); // will trigger countdown stage
     }
 
     @Override

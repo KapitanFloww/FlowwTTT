@@ -12,9 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import static de.flowwindustries.flowwttt.domain.enumeration.GameResult.PENDING;
-import static de.flowwindustries.flowwttt.domain.enumeration.GameResult.TRAITOR_WIN;
-
 /**
  * Listener to listen for player deaths or quits.
  * Recalculates if the match should end then.
@@ -51,7 +48,7 @@ public class MatchEndListener implements Listener {
     }
 
     private static void recalculateGameResult(GameInstance gameInstance) {
-        if (gameInstance.getGameResult() != PENDING) {
+        if (gameInstance.getGameResult() != GameResult.PENDING) {
             throw new IllegalStateException("GameResult is already set to: %s".formatted(gameInstance.getGameResult()));
         }
 
@@ -83,7 +80,7 @@ public class MatchEndListener implements Listener {
     }
 
     private static void traitorsWin(GameInstance gameInstance) {
-        gameInstance.setGameResult(TRAITOR_WIN);
+        gameInstance.setGameResult(GameResult.TRAITOR_WIN);
         gameInstance.startNext();
     }
 }
