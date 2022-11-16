@@ -9,6 +9,7 @@ import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.game.stages.ArchiveGameStage;
 import de.flowwindustries.flowwttt.game.stages.CountdownStage;
 import de.flowwindustries.flowwttt.game.stages.EndgameStage;
+import de.flowwindustries.flowwttt.game.stages.GameStage;
 import de.flowwindustries.flowwttt.game.stages.GracePeriodStage;
 import de.flowwindustries.flowwttt.game.stages.LobbyStage;
 import de.flowwindustries.flowwttt.game.stages.RunningStage;

@@ -3,7 +3,6 @@ package de.flowwindustries.flowwttt.game.stages;
 import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.game.GameInstance;
-import de.flowwindustries.flowwttt.game.GameStage;
 import de.flowwindustries.flowwttt.scheduled.Idler;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import lombok.extern.java.Log;

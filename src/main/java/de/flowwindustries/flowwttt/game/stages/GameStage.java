@@ -1,4 +1,4 @@
-package de.flowwindustries.flowwttt.game;
+package de.flowwindustries.flowwttt.game.stages;
 
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 

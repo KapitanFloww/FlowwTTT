@@ -6,6 +6,12 @@ import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
+import de.flowwindustries.flowwttt.game.listener.ListenerRegistry;
+import de.flowwindustries.flowwttt.game.listener.MatchEndListener;
+import de.flowwindustries.flowwttt.game.listener.PlayerDamageListener;
+import de.flowwindustries.flowwttt.game.listener.PlayerMoveListener;
+import de.flowwindustries.flowwttt.game.listener.PluginContextRegistry;
+import de.flowwindustries.flowwttt.game.listener.StartInstanceListener;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
 import de.flowwindustries.flowwttt.repository.LobbyRepository;
@@ -22,17 +28,25 @@ import de.flowwindustries.flowwttt.services.impl.RoleServiceImpl;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Log
 @Getter
 public class PluginContext {
 
     private static PluginContext context;
+
+    private PluginManager pluginManager;
+    private Plugin plugin;
+
+    private ListenerRegistry listenerRegistry;
 
     // Configuration
     private FileConfigurationWrapper configurationWrapper;
@@ -49,11 +63,14 @@ public class PluginContext {
     private ChestService chestService;
     private RoleService roleService;
 
-    public PluginContext(FileConfiguration fileConfiguration, File configFile) {
+    public PluginContext(FileConfiguration fileConfiguration, File configFile, PluginManager pluginManager, Plugin plugin) {
         context = this;
+        this.pluginManager = Objects.requireNonNull(pluginManager);
+        this.plugin = Objects.requireNonNull(plugin);
         setupConfig(fileConfiguration, configFile);
         setupRepositories();
         setupServices();
+        setupListeners();
     }
 
     private void setupConfig(FileConfiguration fileConfiguration, File configFile) {
@@ -83,6 +100,14 @@ public class PluginContext {
         } catch (Exception ex) {
             log.severe("Could not connect to database: %s".formatted(ex.getMessage()));
         }
+    }
+
+    private void setupListeners() {
+        listenerRegistry = new PluginContextRegistry(pluginManager, plugin);
+        pluginManager.registerEvents(new PlayerMoveListener(context.getGameManagerService()), plugin);
+        pluginManager.registerEvents(new PlayerDamageListener(context.getGameManagerService()), plugin);
+        pluginManager.registerEvents(new StartInstanceListener(context.getGameManagerService()), plugin);
+        pluginManager.registerEvents(new MatchEndListener(context.getGameManagerService()), plugin);
     }
 
     private void setupServices() {

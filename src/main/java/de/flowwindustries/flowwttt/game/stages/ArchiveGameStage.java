@@ -3,7 +3,6 @@ package de.flowwindustries.flowwttt.game.stages;
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.game.GameInstance;
-import de.flowwindustries.flowwttt.game.GameStage;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import lombok.extern.java.Log;
 
