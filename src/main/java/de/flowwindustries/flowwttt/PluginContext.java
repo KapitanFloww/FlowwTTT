@@ -104,10 +104,10 @@ public class PluginContext {
 
     private void setupListeners() {
         listenerRegistry = new PluginContextRegistry(pluginManager, plugin);
-        pluginManager.registerEvents(new PlayerMoveListener(context.getGameManagerService()), plugin);
-        pluginManager.registerEvents(new PlayerDamageListener(context.getGameManagerService()), plugin);
-        pluginManager.registerEvents(new StartInstanceListener(context.getGameManagerService()), plugin);
-        pluginManager.registerEvents(new MatchEndListener(context.getGameManagerService()), plugin);
+        listenerRegistry.registerListener(new PlayerMoveListener(context.getGameManagerService()));
+        listenerRegistry.registerListener(new PlayerDamageListener(context.getGameManagerService()));
+        listenerRegistry.registerListener(new StartInstanceListener(context.getGameManagerService()));
+        listenerRegistry.registerListener(new MatchEndListener(context.getGameManagerService()));
     }
 
     private void setupServices() {

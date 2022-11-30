@@ -1,21 +1,25 @@
 package de.flowwindustries.flowwttt.game.listener;
 
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
+import de.flowwindustries.flowwttt.events.PlayerReduceEvent;
+import de.flowwindustries.flowwttt.events.ReductionType;
 import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
 
 /**
  * Listen to a player death.
  */
+@Log
 @RequiredArgsConstructor
 public class PlayerDamageListener implements Listener {
 
@@ -23,56 +27,52 @@ public class PlayerDamageListener implements Listener {
 
     /**
      * Block damage to players when they are in a valid game instance and the stage is not {@link Stage#RUNNING}.
+     * Handles "death" of a player when being killed by another player.
      * @param event - the event to handle
      */
     @EventHandler
-    public void onPlayerDamage(PlayerInteractEntityEvent event) {
-        GameInstance instance = gameManagerService.getInstanceOf(event.getPlayer());
-        if(instance == null) {
+    public void onPlayerDamage(final EntityDamageByEntityEvent event) {
+        if(!(event.getEntity() instanceof Player player)) {
+            log.fine("Damaged entity a not player. Skipping event handling...");
             return;
         }
-        if(instance.getCurrentStage().getName() != Stage.RUNNING) {
-            if(event.getRightClicked() instanceof Player) {
-                event.setCancelled(true);
-            }
+
+        if(!(event.getDamager() instanceof Player damager)) {
+            log.fine("Damager not a player. Skipping event handling...");
+            return;
         }
+
+        GameInstance instance = gameManagerService.getInstanceOf(player);
+        if(instance == null) {
+            log.fine("Player %s is not in a valid game instance".formatted(player.getName()));
+            return;
+        }
+        if(instance.getCurrentStage().getName() == Stage.RUNNING) {
+            handleDeath(event, instance, player, damager);
+            return;
+        }
+        log.fine("Ignoring damage for player %s".formatted(player.getName()));
+        event.setDamage(0.0d);
+        event.setCancelled(true);
     }
 
     /**
-     * Handle the moment a player's health exceeds 0
-     * @param event - the event to handle
+     * Handle the case that a player would kill another player
      */
-    @EventHandler
-    public void handlePlayerDeath(EntityDamageByEntityEvent event) {
-        if(!event.getEntity().getClass().isInstance(Player.class)) {
-            return; // Victim is not player, skip
-        }
-        if(!event.getDamager().getClass().isInstance(Player.class)) {
-            return; // Killer is not player, skip
-        }
-        Player victim = (Player) event.getEntity();
-        Player killer = (Player) event.getDamager();
+    private void handleDeath(final EntityDamageByEntityEvent event, final GameInstance instance, final Player victim, final Player damager) {
+        if((victim.getHealth() - event.getDamage()) >= 0) {
+            log.info("Handling player kill: Victim: %s Killer: %s".formatted(victim.getName(), damager.getName()));
 
-        // Check if victim had died
-        if(victim.getHealth() > 0) {
-            return;
-        }
+            // Disable the event
+            event.setDamage(0.0d);
+            event.setCancelled(true);
 
-        // Check if victim is part of a game and if the game is in running mode
-        GameInstance instance = gameManagerService.getInstanceOf(victim);
-        if(instance == null) {
-            return;
-        }
-        if(instance.getCurrentStage().getName() != Stage.RUNNING) {
-            return;
-        }
+            handleVictim(victim, damager, instance);
+            handleKiller(victim, damager, instance);
 
-        // Set health of victim to max and spectator
-        handleVictim(victim, killer, instance);
-        handleKiller(victim, killer, instance);
-
-        // Remove victim from the instance
-        instance.killPlayer(victim);
+            PlayerReduceEvent reduceEvent = new PlayerReduceEvent(instance, ReductionType.DEATH, victim);
+            Bukkit.getServer().getPluginManager().callEvent(reduceEvent);
+        }
     }
 
     private void handleKiller(Player victim, Player killer, GameInstance instance) {
@@ -82,10 +82,10 @@ public class PlayerDamageListener implements Listener {
     }
 
     private void handleVictim(Player victim, Player killer, GameInstance instance) {
-        var lobbyLocation = mapSpawnToLocation(instance.getLobby().getLobbySpawn());
+        instance.notifyPlayer(victim, "You have been murdered by %s".formatted(killer.getName()));
         instance.heal(victim);
         instance.setGameMode(victim, GameMode.SPECTATOR);
+        var lobbyLocation = mapSpawnToLocation(instance.getLobby().getLobbySpawn());
         instance.teleport(victim, lobbyLocation);
-        instance.notifyPlayer(victim, "You have been murdered by %s".formatted(killer.getName()));
     }
 }

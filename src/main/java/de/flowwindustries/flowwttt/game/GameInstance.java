@@ -6,6 +6,7 @@ import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
+import de.flowwindustries.flowwttt.events.ReductionType;
 import de.flowwindustries.flowwttt.game.stages.ArchiveGameStage;
 import de.flowwindustries.flowwttt.game.stages.CountdownStage;
 import de.flowwindustries.flowwttt.game.stages.EndgameStage;
@@ -17,7 +18,6 @@ import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
 import de.flowwindustries.flowwttt.services.RoleService;
-import de.flowwindustries.flowwttt.utils.SpigotParser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -50,6 +50,7 @@ public class GameInstance {
 
     private final Map<Player, Role> playerRoles = new HashMap<>();
     private final Map<Player, Role> activePlayers = new HashMap<>();
+    private final Map<Player, ReductionType> removedPlayers = new HashMap<>();
 
     private final ChestService chestService;
     private final ArenaService arenaService;
@@ -73,22 +74,13 @@ public class GameInstance {
             throw new IllegalArgumentException("Cannot add player to instance in stage: %s".formatted(currentStage.getName()));
         }
         activePlayers.put(player, Role.PENDING);
-        log.config("Adding player %s to game instance %s".formatted(player.getName(), identifier));
+        log.config("Added player %s to game instance %s".formatted(player.getName(), identifier));
     }
 
-    @Deprecated
-    public void killPlayer(Player player) {
-        var lobbyLocation = SpigotParser.mapSpawnToLocation(lobby.getLobbySpawn());
-        teleport(player, lobbyLocation);
-        heal(player);
-        removePlayer(player);
-        notifyPlayer(player, "You have been killed!");
-    }
-
-    @Deprecated
-    public void removePlayer(Player player) {
+    public void removePlayer(Player player, ReductionType reductionType) {
         activePlayers.remove(player);
-        log.config("Removed player " + player.getName() + " to game instance " +  identifier);
+        removedPlayers.put(player, reductionType);
+        log.config("Removed player " + player.getName() + " from game instance " +  identifier);
     }
 
     /**
