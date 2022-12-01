@@ -9,7 +9,6 @@ import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -23,13 +22,14 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class MatchEndListener implements Listener {
 
     private final GameManagerService gameManagerService;
+    private final EventSink eventSink;
 
     @EventHandler
     public void onPlayerDamage(final PlayerQuitEvent event) {
         GameInstance instance = gameManagerService.getInstanceOf(event.getPlayer());
         if(instance != null) {
             PlayerReduceEvent reduceEvent = new PlayerReduceEvent(instance, ReductionType.QUIT, event.getPlayer());
-            Bukkit.getServer().getPluginManager().callEvent(reduceEvent);
+            eventSink.push(reduceEvent);
         }
     }
 

@@ -7,7 +7,6 @@ import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,6 +23,7 @@ import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
 public class PlayerDamageListener implements Listener {
 
     private final GameManagerService gameManagerService;
+    private final EventSink eventSink;
 
     /**
      * Block damage to players when they are in a valid game instance and the stage is not {@link Stage#RUNNING}.
@@ -71,14 +71,8 @@ public class PlayerDamageListener implements Listener {
             handleKiller(victim, damager, instance);
 
             PlayerReduceEvent reduceEvent = new PlayerReduceEvent(instance, ReductionType.DEATH, victim);
-            Bukkit.getServer().getPluginManager().callEvent(reduceEvent);
+            eventSink.push(reduceEvent);
         }
-    }
-
-    private void handleKiller(Player victim, Player killer, GameInstance instance) {
-        var role = instance.getPlayerRoles().get(victim);
-        instance.notifyPlayer(killer, "You killed %s [%s]".formatted(victim.getName(), role));
-        // TODO KapitanFLoww add or remove karma
     }
 
     private void handleVictim(Player victim, Player killer, GameInstance instance) {
@@ -87,5 +81,11 @@ public class PlayerDamageListener implements Listener {
         instance.setGameMode(victim, GameMode.SPECTATOR);
         var lobbyLocation = mapSpawnToLocation(instance.getLobby().getLobbySpawn());
         instance.teleport(victim, lobbyLocation);
+    }
+
+    private void handleKiller(Player victim, Player killer, GameInstance instance) {
+        var role = instance.getPlayerRoles().get(victim);
+        instance.notifyPlayer(killer, "You killed %s [%s]".formatted(victim.getName(), role));
+        // TODO KapitanFLoww add or remove karma
     }
 }

@@ -8,6 +8,7 @@ import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.events.PlayerReduceEvent;
 import de.flowwindustries.flowwttt.events.ReductionType;
 import de.flowwindustries.flowwttt.game.GameInstance;
+import de.flowwindustries.flowwttt.game.listener.EventSink;
 import de.flowwindustries.flowwttt.game.stages.ArchiveGameStage;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
@@ -17,7 +18,6 @@ import de.flowwindustries.flowwttt.services.RoleService;
 import de.flowwindustries.flowwttt.utils.SpigotParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
@@ -42,10 +42,11 @@ public class GameManagerServiceImpl implements GameManagerService {
     private final ArenaService arenaService;
     private final RoleService roleService;
     private final ArchivedGameRepository archivedGameRepository;
+    private final EventSink eventSink;
 
     @Override
     public GameInstance createInstance(Lobby lobby) {
-        GameInstance gameInstance = new GameInstance(chestService, arenaService, roleService, archivedGameRepository);
+        GameInstance gameInstance = new GameInstance(chestService, arenaService, roleService, archivedGameRepository, eventSink);
         gameInstance.setLobby(lobby);
         instances.add(gameInstance);
         log.info("Created " +
@@ -86,7 +87,7 @@ public class GameManagerServiceImpl implements GameManagerService {
         GameInstance instance = getGameInstanceSafe(identifier);
 
         PlayerReduceEvent reduceEvent = new PlayerReduceEvent(instance, ReductionType.REMOVAL, player);
-        Bukkit.getServer().getPluginManager().callEvent(reduceEvent);
+        eventSink.push(reduceEvent);
 
         playerInstanceMap.remove(player);
     }

@@ -6,10 +6,12 @@ import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
+import de.flowwindustries.flowwttt.game.listener.EventSink;
 import de.flowwindustries.flowwttt.game.listener.ListenerRegistry;
 import de.flowwindustries.flowwttt.game.listener.MatchEndListener;
 import de.flowwindustries.flowwttt.game.listener.PlayerDamageListener;
 import de.flowwindustries.flowwttt.game.listener.PlayerMoveListener;
+import de.flowwindustries.flowwttt.game.listener.PluginContextEventSink;
 import de.flowwindustries.flowwttt.game.listener.PluginContextRegistry;
 import de.flowwindustries.flowwttt.game.listener.StartInstanceListener;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
@@ -33,7 +35,7 @@ import org.bukkit.plugin.PluginManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -41,12 +43,11 @@ import java.util.Objects;
 @Getter
 public class PluginContext {
 
-    private static PluginContext context;
-
-    private PluginManager pluginManager;
-    private Plugin plugin;
+    private final PluginManager pluginManager;
+    private final Plugin plugin;
 
     private ListenerRegistry listenerRegistry;
+    private EventSink eventSink;
 
     // Configuration
     private FileConfigurationWrapper configurationWrapper;
@@ -64,10 +65,10 @@ public class PluginContext {
     private RoleService roleService;
 
     public PluginContext(FileConfiguration fileConfiguration, File configFile, PluginManager pluginManager, Plugin plugin) {
-        context = this;
         this.pluginManager = Objects.requireNonNull(pluginManager);
         this.plugin = Objects.requireNonNull(plugin);
         setupConfig(fileConfiguration, configFile);
+        setupEventSink();
         setupRepositories();
         setupServices();
         setupListeners();
@@ -83,8 +84,12 @@ public class PluginContext {
             log.info("Saving config file...");
             fileConfiguration.save(configFile);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Could not save configuration: %s".formatted(e));
         }
+    }
+
+    private void setupEventSink() {
+        this.eventSink = new PluginContextEventSink(pluginManager);
     }
 
     private void setupRepositories() {
@@ -102,24 +107,24 @@ public class PluginContext {
         }
     }
 
-    private void setupListeners() {
-        listenerRegistry = new PluginContextRegistry(pluginManager, plugin);
-        listenerRegistry.registerListener(new PlayerMoveListener(context.getGameManagerService()));
-        listenerRegistry.registerListener(new PlayerDamageListener(context.getGameManagerService()));
-        listenerRegistry.registerListener(new StartInstanceListener(context.getGameManagerService()));
-        listenerRegistry.registerListener(new MatchEndListener(context.getGameManagerService()));
-    }
-
     private void setupServices() {
         this.chestService = new ChestServiceImpl();
         this.arenaService = new ArenaServiceImpl(arenaRepository);
         this.lobbyService = new LobbyServiceImpl(arenaService, lobbyRepository);
         this.roleService = new RoleServiceImpl(getRoleRatios());
-        this.gameManagerService = new GameManagerServiceImpl(chestService, arenaService, roleService, archivedGameRepository);
+        this.gameManagerService = new GameManagerServiceImpl(chestService, arenaService, roleService, archivedGameRepository, eventSink);
+    }
+
+    private void setupListeners() {
+        listenerRegistry = new PluginContextRegistry(pluginManager, plugin);
+        listenerRegistry.registerListener(new PlayerMoveListener(gameManagerService));
+        listenerRegistry.registerListener(new PlayerDamageListener(gameManagerService, eventSink));
+        listenerRegistry.registerListener(new StartInstanceListener(gameManagerService));
+        listenerRegistry.registerListener(new MatchEndListener(gameManagerService, eventSink));
     }
 
     private static Map<Role, Float> getRoleRatios() {
-        var ratios = new HashMap<Role, Float>();
+        var ratios = new EnumMap<Role, Float>(Role.class);
         ratios.put(Role.TRAITOR, 0.30f);
         ratios.put(Role.DETECTIVE, 0.10f);
         ratios.put(Role.INNOCENT, 0.60f);

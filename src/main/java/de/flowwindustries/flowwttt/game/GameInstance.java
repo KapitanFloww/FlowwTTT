@@ -7,6 +7,7 @@ import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.events.ReductionType;
+import de.flowwindustries.flowwttt.game.listener.EventSink;
 import de.flowwindustries.flowwttt.game.stages.ArchiveGameStage;
 import de.flowwindustries.flowwttt.game.stages.CountdownStage;
 import de.flowwindustries.flowwttt.game.stages.EndgameStage;
@@ -44,7 +45,7 @@ public class GameInstance {
     private final String identifier;
     private final Instant createdAt;
     private GameStage currentStage;
-    private GameResult gameResult;
+    private GameResult gameResult = GameResult.PENDING;
     private Lobby lobby;
     private Arena arena;
 
@@ -57,14 +58,20 @@ public class GameInstance {
     private final RoleService roleService;
     private final ArchivedGameRepository archivedGameRepository;
 
-    public GameInstance(ChestService chestService, ArenaService arenaService, RoleService roleService, ArchivedGameRepository archivedGameRepository) {
+    private final EventSink eventSink;
+
+    public GameInstance(ChestService chestService, ArenaService arenaService, RoleService roleService, ArchivedGameRepository archivedGameRepository, EventSink eventSink) {
+        this.archivedGameRepository = Objects.requireNonNull(archivedGameRepository);
+        this.chestService = Objects.requireNonNull(chestService);
+        this.arenaService = Objects.requireNonNull(arenaService);
+        this.roleService = Objects.requireNonNull(roleService);
+        this.eventSink = Objects.requireNonNull(eventSink);
         this.identifier = UUID.randomUUID().toString();
         this.createdAt = Instant.now(Clock.systemUTC());
-        this.gameResult = GameResult.PENDING;
-        this.chestService = chestService;
-        this.arenaService = arenaService;
-        this.roleService = roleService;
-        this.archivedGameRepository = Objects.requireNonNull(archivedGameRepository);
+        init();
+    }
+
+    private void init() {
         this.currentStage = getGameStage(Stage.LOBBY);
         this.currentStage.beginStage();
     }
@@ -234,13 +241,13 @@ public class GameInstance {
 
     private GameStage getGameStage(Stage stage) {
         if(currentStage == null) {
-            return new LobbyStage(this, arenaService);
+            return new LobbyStage(this, arenaService, eventSink);
         }
         if(currentStage.getName() == stage) {
             throw new IllegalStateException("Instance is already in stage %s".formatted(currentStage.getName()));
         }
         return switch (stage) {
-            case LOBBY -> new LobbyStage(this, arenaService);
+            case LOBBY -> new LobbyStage(this, arenaService, eventSink);
             case COUNTDOWN -> new CountdownStage(this, chestService);
             case GRACE_PERIOD -> new GracePeriodStage(this, roleService);
             case RUNNING -> new RunningStage(this);

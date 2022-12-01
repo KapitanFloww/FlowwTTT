@@ -4,6 +4,7 @@ import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.commands.PlayerMessage;
 import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.events.StartInstanceEvent;
+import de.flowwindustries.flowwttt.game.listener.EventSink;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
@@ -18,12 +19,14 @@ public class Idler implements Runnable {
     private final TTTPlugin plugin;
     private final GameInstance instance;
     private final ArenaService arenaService;
+    private final EventSink eventSink;
 
-    public Idler(TTTPlugin plugin, GameInstance instance, ArenaService arenaService) {
+    public Idler(TTTPlugin plugin, GameInstance instance, ArenaService arenaService, EventSink eventSink) {
         this.minRequiredPlayers = readInt(PATH_GAME_MIN_PLAYERS);
         this.plugin = plugin;
         this.instance = instance;
         this.arenaService = arenaService;
+        this.eventSink = eventSink;
     }
 
     private Integer taskId;
@@ -33,8 +36,8 @@ public class Idler implements Runnable {
         if(instance.getCurrentPlayersActive().size() >= minRequiredPlayers) {
             PlayerMessage.info("Game is starting...", instance.getCurrentPlayersActive());
             // Start the game - for now get a random arena
-            StartInstanceEvent event = new StartInstanceEvent(instance.getIdentifier(), arenaService.getAll().stream().findAny().get()); // TODO KapitanFloww get specific/voted arena instead
-            Bukkit.getServer().getPluginManager().callEvent(event);
+            StartInstanceEvent startInstanceEvent = new StartInstanceEvent(instance.getIdentifier(), arenaService.getAll().stream().findAny().get()); // TODO KapitanFloww get specific/voted arena instead
+            eventSink.push(startInstanceEvent);
             cancel();
             return;
         }

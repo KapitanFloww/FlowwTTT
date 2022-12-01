@@ -66,6 +66,7 @@ public class TestPluginManager implements PluginManager {
 
     @Override
     public void callEvent(Event event) throws IllegalStateException {
+        log.info("Event %s called".formatted(event.getEventName()));
 
     }
 
