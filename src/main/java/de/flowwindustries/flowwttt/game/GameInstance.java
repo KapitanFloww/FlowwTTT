@@ -18,6 +18,7 @@ import de.flowwindustries.flowwttt.game.stages.RunningStage;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
+import de.flowwindustries.flowwttt.services.GameManagerService;
 import de.flowwindustries.flowwttt.services.RoleService;
 import lombok.Getter;
 import lombok.Setter;
@@ -59,12 +60,15 @@ public class GameInstance {
     private final ChestService chestService;
     private final ArenaService arenaService;
     private final RoleService roleService;
+    private final GameManagerService gameManagerService;
     private final ArchivedGameRepository archivedGameRepository;
 
     private final EventSink eventSink;
 
-    public GameInstance(ChestService chestService, ArenaService arenaService, RoleService roleService, ArchivedGameRepository archivedGameRepository, EventSink eventSink) {
+    public GameInstance(ChestService chestService, ArenaService arenaService, RoleService roleService,
+                        GameManagerService gameManagerService, ArchivedGameRepository archivedGameRepository, EventSink eventSink) {
         this.archivedGameRepository = Objects.requireNonNull(archivedGameRepository);
+        this.gameManagerService = Objects.requireNonNull(gameManagerService);
         this.chestService = Objects.requireNonNull(chestService);
         this.arenaService = Objects.requireNonNull(arenaService);
         this.roleService = Objects.requireNonNull(roleService);
@@ -290,7 +294,18 @@ public class GameInstance {
             case GRACE_PERIOD -> new GracePeriodStage(this, roleService);
             case RUNNING -> new RunningStage(this);
             case ENDGAME -> new EndgameStage(this, chestService);
-            case ARCHIVED -> new ArchiveGameStage(this, archivedGameRepository);
+            case ARCHIVED -> new ArchiveGameStage(this, gameManagerService, archivedGameRepository);
         };
+    }
+
+    /**
+     * Clear this instance.
+     */
+    public void cleanup() {
+        log.info("Clearing instance %s".formatted(identifier));
+        allPlayers.clear();
+        activePlayers.clear();
+        removedPlayers.clear();
+        playerRoles.clear();
     }
 }

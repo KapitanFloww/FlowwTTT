@@ -65,6 +65,18 @@ public class ArchivedGame {
     private String playerNames;
 
     /**
+     * Dead players
+     */
+    @Column(name = "dead_players")
+    private String deadPlayers;
+
+    /**
+     * Alive players
+     */
+    @Column(name = "alive_players")
+    private String alivePlayers;
+
+    /**
      * Timestamp.
      */
     @Column(name = "ended_at")

@@ -4,6 +4,7 @@ import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
+import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.extern.java.Log;
 
 import java.time.Clock;
@@ -14,11 +15,13 @@ import java.util.Objects;
 public class ArchiveGameStage implements GameStage {
 
     private final GameInstance gameInstance;
+    private final GameManagerService gameManagerService;
     private final ArchivedGameRepository archivedGameRepository;
 
-    public ArchiveGameStage(GameInstance gameInstance, ArchivedGameRepository archivedGameRepository) {
+    public ArchiveGameStage(GameInstance gameInstance, GameManagerService gameManagerService, ArchivedGameRepository archivedGameRepository) {
         this.gameInstance = Objects.requireNonNull(gameInstance);
         this.archivedGameRepository = Objects.requireNonNull(archivedGameRepository);
+        this.gameManagerService = Objects.requireNonNull(gameManagerService);
     }
 
     @Override
@@ -40,12 +43,19 @@ public class ArchiveGameStage implements GameStage {
                 .withStage(gameInstance.getCurrentStage().getName())
                 .withLobbyName(gameInstance.getLobby().getLobbyName())
                 .withArenaName(gameInstance.getArena().getArenaName())
-                .withPlayerNames(gameInstance.getCurrentPlayersActive().toString())
+                .withPlayerNames(gameInstance.getAllPlayers().toString())
+                .withDeadPlayers(gameInstance.getRemovedPlayers().toString())
+                .withAlivePlayers(gameInstance.getCurrentPlayersActive().toString())
                 .withEndedAt(Instant.now(Clock.systemUTC()));
         archivedGameRepository.create(archivedGame);
         log.info("Archived game: %s".formatted(gameInstance.getIdentifier()));
+
+        // End archive game stage
+        endStage();
     }
 
     @Override
-    public void endStage() {}
+    public void endStage() {
+        gameManagerService.cleanupInstance(gameInstance.getIdentifier());
+    }
 }

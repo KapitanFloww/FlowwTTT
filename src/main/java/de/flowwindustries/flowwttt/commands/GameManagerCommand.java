@@ -1,10 +1,10 @@
 package de.flowwindustries.flowwttt.commands;
 
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
-import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
+import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import de.flowwindustries.flowwttt.services.LobbyService;
@@ -121,28 +121,35 @@ public class GameManagerCommand extends AbstractCommand {
     }
 
     private void infoInstance(Player player, String instanceId) {
-        GameInstance instance = gameManagerService.getGameInstanceSafe(instanceId);
-        PlayerMessage.info(String.format(GOLD + "Instance %s Details:", instance.getIdentifier()), player);
-        player.sendMessage(String.format(YELLOW + "Stage: %s", instance.getCurrentStage().getName()));
-        player.sendMessage(String.format(YELLOW + "Lobby: %s", getLobbyName(instance)));
-        player.sendMessage(String.format(YELLOW + "Arena: %s", getArenaName(instance)));
-        player.sendMessage(String.format(YELLOW + "Players: %s:", instance.getCurrentPlayersActive().size()));
-        player.sendMessage(String.format(YELLOW + "Result: %s:", instance.getGameResult()));
-        instance.getCurrentPlayersActive().forEach(playerInInstance -> player.sendMessage(YELLOW + playerInInstance.getName()));
+        GameInstance gameInstance = gameManagerService.getGameInstanceSafe(instanceId);
+        var removedPlayers = gameInstance.getRemovedPlayers();
+        var livingPlayers = gameInstance.getActivePlayers();
+        var allPlayers = gameInstance.getAllPlayers();
+
+        PlayerMessage.success("Displaying info for %s".formatted(gameInstance.getIdentifier()), player);
+        PlayerMessage.info("Current Stage: %s".formatted(gameInstance.getCurrentStage().getName()), player);
+        PlayerMessage.info("Game Result: %s".formatted(gameInstance.getGameResult()), player);
+        PlayerMessage.info("Lobby: %s".formatted(gameInstance.getLobby().getLobbyName()), player);
+        if(gameInstance.getArena() != null) {
+            PlayerMessage.info("Arena: %s".formatted(gameInstance.getArena().getArenaName()), player);
+        } else {
+            PlayerMessage.info("Arena: Arena not set", player);
+        }
+        PlayerMessage.info("Dead players (%s): %s".formatted(removedPlayers.size(), removedPlayers.toString()), player);
+        PlayerMessage.info("Living players (%s): %s".formatted(livingPlayers.size(), livingPlayers.toString()), player);
+        PlayerMessage.info("Registered players (%s): %s".formatted(allPlayers.size(), allPlayers.toString()), player);
+        PlayerMessage.info("", player);
     }
 
     private void listInstances(Player player) {
         Collection<GameInstance> instances = gameManagerService.list();
-        PlayerMessage.info(String.format(GOLD + "Listing %s Instances:", instances.size()), player);
-        instances.forEach(gameInstance -> {
-            player.sendMessage(String.format(YELLOW + "[%s]: %s %s %s (%s)",
-                            gameInstance.getIdentifier(),
-                            gameInstance.getCurrentStage().getName(),
-                            getLobbyName(gameInstance),
-                            getArenaName(gameInstance),
-                            gameInstance.getCurrentPlayersActive().size())
-            );
-            }
+        PlayerMessage.info("Listing %s instances".formatted(instances.size()), player);
+        instances.forEach(gameInstance -> PlayerMessage.success("Instance: %s Arena: %s Lobby %s Living Players: %s"
+                .formatted(gameInstance.getIdentifier(),
+                        gameInstance.getArena().getArenaName(),
+                        gameInstance.getLobby().getLobbyName(),
+                        gameInstance.getActivePlayers().size()
+                ))
         );
     }
 

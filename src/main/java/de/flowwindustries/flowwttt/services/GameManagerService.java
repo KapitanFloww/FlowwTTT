@@ -83,4 +83,9 @@ public interface GameManagerService {
      * @return all archived instances.
      */
     Collection<ArchivedGame> listArchived();
+
+    /**
+     * Cleanup the given instance.
+     */
+    void cleanupInstance(String identifier);
 }

@@ -46,7 +46,7 @@ public class GameManagerServiceImpl implements GameManagerService {
 
     @Override
     public GameInstance createInstance(Lobby lobby) {
-        GameInstance gameInstance = new GameInstance(chestService, arenaService, roleService, archivedGameRepository, eventSink);
+        GameInstance gameInstance = new GameInstance(chestService, arenaService, roleService, this, archivedGameRepository, eventSink);
         gameInstance.setLobby(lobby);
         instances.add(gameInstance);
         log.info("Created " +
@@ -110,7 +110,7 @@ public class GameManagerServiceImpl implements GameManagerService {
         instance.getCurrentStage().endStage();
         // Cancel the match
         instance.setGameResult(GameResult.CANCELED);
-        instance.setCurrentStage(new ArchiveGameStage(instance, archivedGameRepository));
+        instance.setCurrentStage(new ArchiveGameStage(instance, this, archivedGameRepository));
         instance.healAll();
         instance.clearInventoryAll();
         instance.setGameModeAll(GameMode.ADVENTURE);
@@ -148,5 +148,14 @@ public class GameManagerServiceImpl implements GameManagerService {
             throw new IllegalStateException("More than one instance with identifier " + identifier + " found");
         }
         return instanceList.get(0);
+    }
+
+    @Override
+    public void cleanupInstance(String identifier) {
+        log.info("Request to cleanup instance: %s".formatted(identifier));
+        var instance = getGameInstanceSafe(identifier);
+        var players = instance.getAllPlayers();
+        players.forEach(playerInstanceMap::remove);
+        instance.cleanup();
     }
 }
