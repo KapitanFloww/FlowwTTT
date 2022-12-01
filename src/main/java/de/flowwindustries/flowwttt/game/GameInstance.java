@@ -76,6 +76,10 @@ public class GameInstance {
         this.currentStage.beginStage();
     }
 
+    /**
+     * Add a player to this instance.
+     * @param player - the player to add
+     */
     public void addPlayer(Player player) {
         if(currentStage.getName() != Stage.LOBBY) {
             throw new IllegalArgumentException("Cannot add player to instance in stage: %s".formatted(currentStage.getName()));
@@ -84,6 +88,11 @@ public class GameInstance {
         log.config("Added player %s to game instance %s".formatted(player.getName(), identifier));
     }
 
+    /**
+     * Remove a player from this instance.
+     * @param player - the player to remove
+     * @param reductionType - the reduction type
+     */
     public void removePlayer(Player player, ReductionType reductionType) {
         activePlayers.remove(player);
         removedPlayers.put(player, reductionType);

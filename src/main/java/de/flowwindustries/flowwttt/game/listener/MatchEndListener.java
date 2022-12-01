@@ -36,17 +36,17 @@ public class MatchEndListener implements Listener {
     @EventHandler
     public void onPlayerReduce(final PlayerReduceEvent event) {
         // TODO KapitanFloww what to do when match is in lobby, countdown or grace-period
-        // Check if instance is still running
         log.info("Handling player reduction for instance %s. Type: %s. victim: %s".formatted(event.getInstance().getIdentifier(), event.getReductionType(), event.getVictim().getName()));
-        if(event.getInstance().getCurrentStage().getName() != Stage.RUNNING) {
-            return;
-        }
 
         // Remove player from instance
         var instance = event.getInstance();
         instance.removePlayer(event.getVictim(), event.getReductionType());
 
-        recalculateGameResult(instance);
+        // If instance is still running recalculate game result
+        if(event.getInstance().getCurrentStage().getName() == Stage.RUNNING) {
+            recalculateGameResult(instance);
+            return;
+        }
     }
 
     private static void recalculateGameResult(GameInstance instance) {
