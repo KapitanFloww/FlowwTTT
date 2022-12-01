@@ -85,6 +85,10 @@ public class GameInstance {
             throw new IllegalArgumentException("Cannot add player to instance in stage: %s".formatted(currentStage.getName()));
         }
         activePlayers.put(player, Role.PENDING);
+        setLevel(player, 0);
+        setGameMode(player, GameMode.ADVENTURE);
+        clearInventory(player);
+        heal(player);
         log.config("Added player %s to game instance %s".formatted(player.getName(), identifier));
     }
 
@@ -148,7 +152,7 @@ public class GameInstance {
      * Clear a players inventory.
      * @param player - the player to clear
      */
-    public void clear(Player player) {
+    public void clearInventory(Player player) {
         log.config("Clearing inventory of player %s".formatted(player.getName()));
         player.getInventory().clear();
     }
@@ -156,8 +160,8 @@ public class GameInstance {
     /**
      * Clear the inventory of all active players of this instance.
      */
-    public void clearAll() {
-        getCurrentPlayersActive().forEach(this::clear);
+    public void clearInventoryAll() {
+        getCurrentPlayersActive().forEach(this::clearInventory);
     }
 
     /**

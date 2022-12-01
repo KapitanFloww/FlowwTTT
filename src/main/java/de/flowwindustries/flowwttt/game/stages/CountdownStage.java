@@ -8,6 +8,7 @@ import de.flowwindustries.flowwttt.scheduled.Countdown;
 import de.flowwindustries.flowwttt.services.ChestService;
 import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -46,16 +47,7 @@ public class CountdownStage implements GameStage {
     @Override
     public void beginStage() {
         log.info("%s stage has begun for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
-        for(int i=0; i < gameInstance.getCurrentPlayersActive().size(); i++) {
-            Player player = gameInstance.getCurrentPlayersActive().get(i);
-            PlayerSpawn spawn = gameInstance.getArena().getPlayerSpawns().get(i);
-
-            World world = Bukkit.getWorld(spawn.getWorldName());
-            Location location = new Location(world, spawn.getX(), spawn.getY(), spawn.getZ(), spawn.getYaw(), spawn.getPitch());
-
-            player.teleport(location);
-            player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
-        }
+        teleportPlayerToSpawns();
         lobbyCountdown = new Countdown(TTTPlugin.getInstance(),
                 gameInstance.getIdentifier(),
                 countDownDuration,
@@ -75,5 +67,23 @@ public class CountdownStage implements GameStage {
     public void endStage() {
         log.info("%s stage ends for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
         lobbyCountdown.cancel();
+    }
+
+    private void teleportPlayerToSpawns() {
+        for(int i=0; i < gameInstance.getCurrentPlayersActive().size(); i++) {
+            Player player = gameInstance.getCurrentPlayersActive().get(i);
+            PlayerSpawn spawn = gameInstance.getArena().getPlayerSpawns().get(i);
+
+            World world = Bukkit.getWorld(spawn.getWorldName());
+            Location location = new Location(world, spawn.getX(), spawn.getY(), spawn.getZ(), spawn.getYaw(), spawn.getPitch());
+
+            player.teleport(location);
+            player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
+
+            gameInstance.setGameMode(player, GameMode.ADVENTURE);
+            gameInstance.setLevel(player, 0);
+            gameInstance.clearInventory(player);
+            gameInstance.heal(player);
+        }
     }
 }

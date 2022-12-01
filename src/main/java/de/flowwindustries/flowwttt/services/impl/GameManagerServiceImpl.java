@@ -112,7 +112,7 @@ public class GameManagerServiceImpl implements GameManagerService {
         instance.setGameResult(GameResult.CANCELED);
         instance.setCurrentStage(new ArchiveGameStage(instance, archivedGameRepository));
         instance.healAll();
-        instance.clearAll();
+        instance.clearInventoryAll();
         instance.setGameModeAll(GameMode.ADVENTURE);
         var lobbyLocation = SpigotParser.mapSpawnToLocation(instance.getLobby().getLobbySpawn());
         instance.teleportAll(lobbyLocation);

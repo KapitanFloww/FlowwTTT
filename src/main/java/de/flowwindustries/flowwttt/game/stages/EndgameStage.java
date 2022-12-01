@@ -64,9 +64,12 @@ public class EndgameStage implements GameStage {
         log.info("%s stage ends for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
         endgameCountdown.cancel();
 
-        gameInstance.healAll();
-        gameInstance.clearAll();
-        gameInstance.setGameModeAll(GameMode.ADVENTURE);
+        gameInstance.getCurrentPlayersActive().forEach(player -> {
+            gameInstance.heal(player);
+            gameInstance.clearInventory(player);
+            gameInstance.setGameMode(player, GameMode.ADVENTURE);
+            gameInstance.setLevel(player, 0);
+        });
 
         var lobbyLocation = SpigotParser.mapSpawnToLocation(gameInstance.getLobby().getLobbySpawn());
         gameInstance.teleportAll(lobbyLocation);
