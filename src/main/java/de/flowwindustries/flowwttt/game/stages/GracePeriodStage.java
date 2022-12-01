@@ -77,9 +77,13 @@ public class GracePeriodStage implements GameStage {
     }
 
     private static void notifyPlayerRole(Player player, Role role) {
+        PlayerMessage.success("", player);
         PlayerMessage.success("########################", player);
+        PlayerMessage.success("", player);
         PlayerMessage.success("You are assigned: %s".formatted(role), player);
+        PlayerMessage.success("", player);
         PlayerMessage.success("########################", player);
+        PlayerMessage.success("", player);
     }
 
     private Player mapPlayer(String playerName) {

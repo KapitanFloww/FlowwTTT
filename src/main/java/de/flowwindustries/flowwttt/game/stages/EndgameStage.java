@@ -49,9 +49,15 @@ public class EndgameStage implements GameStage {
                 gameInstance.getIdentifier(),
                 10,
                 () -> {
-                    gameInstance.notifyAllPlayers("*********************************");
-                    gameInstance.notifyAllPlayers("Match has ended: %s".formatted(gameInstance.getGameResult()));
-                    gameInstance.notifyAllPlayers("*********************************");
+                    gameInstance.getAllPlayers().forEach(player -> {
+                        gameInstance.notifyPlayer(player, "");
+                        gameInstance.notifyPlayer(player, "*********************************");
+                        gameInstance.notifyPlayer(player, "");
+                        gameInstance.notifyPlayer(player, "%s".formatted(gameInstance.getGameResult()));
+                        gameInstance.notifyPlayer(player, "");
+                        gameInstance.notifyPlayer(player, "*********************************");
+                        gameInstance.notifyPlayer(player, "");
+                    });
                 },
                 gameInstance::startNext,
                 t -> {}
@@ -64,16 +70,15 @@ public class EndgameStage implements GameStage {
         log.info("%s stage ends for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
         endgameCountdown.cancel();
 
-        gameInstance.getCurrentPlayersActive().forEach(player -> {
+        var lobbyLocation = SpigotParser.mapSpawnToLocation(gameInstance.getLobby().getLobbySpawn());
+
+        gameInstance.getAllPlayers().forEach(player -> {
             gameInstance.heal(player);
             gameInstance.clearInventory(player);
             gameInstance.setGameMode(player, GameMode.ADVENTURE);
             gameInstance.setLevel(player, 0);
+            gameInstance.teleport(player, lobbyLocation);
         });
-
-        var lobbyLocation = SpigotParser.mapSpawnToLocation(gameInstance.getLobby().getLobbySpawn());
-        gameInstance.teleportAll(lobbyLocation);
-
         // TODO KapitanFloww create a new game instance and assign all online players to it
     }
 }

@@ -29,9 +29,11 @@ import org.bukkit.entity.Player;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -49,6 +51,7 @@ public class GameInstance {
     private Lobby lobby;
     private Arena arena;
 
+    private final Set<Player> allPlayers = new HashSet<>();
     private final Map<Player, Role> playerRoles = new HashMap<>();
     private final Map<Player, Role> activePlayers = new HashMap<>();
     private final Map<Player, ReductionType> removedPlayers = new HashMap<>();
@@ -84,6 +87,7 @@ public class GameInstance {
         if(currentStage.getName() != Stage.LOBBY) {
             throw new IllegalArgumentException("Cannot add player to instance in stage: %s".formatted(currentStage.getName()));
         }
+        allPlayers.add(player);
         activePlayers.put(player, Role.PENDING);
         setLevel(player, 0);
         setGameMode(player, GameMode.ADVENTURE);
@@ -98,9 +102,20 @@ public class GameInstance {
      * @param reductionType - the reduction type
      */
     public void removePlayer(Player player, ReductionType reductionType) {
+        killPlayer(player, reductionType);
+        allPlayers.remove(player);
+        log.config("Removed player " + player.getName() + " from game instance " +  identifier);
+    }
+
+    /**
+     * Kill a player but do not remove player from instance.
+     * @param player - the player to kill
+     * @param reductionType - the reduction type
+     */
+    public void killPlayer(Player player, ReductionType reductionType) {
         activePlayers.remove(player);
         removedPlayers.put(player, reductionType);
-        log.config("Removed player " + player.getName() + " from game instance " +  identifier);
+        log.config("Killed player " + player.getName() + " in game instance " +  identifier);
     }
 
     /**
@@ -145,7 +160,7 @@ public class GameInstance {
      * Heal all active players in this instance.
      */
     public void healAll() {
-        getCurrentPlayersActive().forEach(this::heal);
+        allPlayers.forEach(this::heal);
     }
 
     /**
@@ -158,10 +173,10 @@ public class GameInstance {
     }
 
     /**
-     * Clear the inventory of all active players of this instance.
+     * Clear the inventory of all players of this instance.
      */
     public void clearInventoryAll() {
-        getCurrentPlayersActive().forEach(this::clearInventory);
+        allPlayers.forEach(this::clearInventory);
     }
 
     /**
@@ -175,11 +190,11 @@ public class GameInstance {
     }
 
     /**
-     * Set the game-mode of all active players of this instance.
+     * Set the game-mode of all players of this instance.
      * @param gameMode - the target game-mode
      */
     public void setGameModeAll(GameMode gameMode) {
-        getCurrentPlayersActive().forEach(player -> setGameMode(player, gameMode));
+        allPlayers.forEach(player -> setGameMode(player, gameMode));
     }
 
     /**
@@ -193,11 +208,11 @@ public class GameInstance {
     }
 
     /**
-     * Teleport all active players of this instance.
+     * Teleport all players of this instance.
      * @param location - the target location
      */
     public void teleportAll(Location location) {
-        getCurrentPlayersActive().forEach(player -> teleport(player, location));
+        allPlayers.forEach(player -> teleport(player, location));
     }
 
     /**
@@ -211,11 +226,11 @@ public class GameInstance {
     }
 
     /**
-     * Set the level of all active players of this instance.
+     * Set the level of all players of this instance.
      * @param level - the level to set
      */
     public void setLevelAll(int level) {
-        getCurrentPlayersActive().forEach(player -> setLevel(player, level));
+        allPlayers.forEach(player -> setLevel(player, level));
     }
 
     /**
@@ -233,7 +248,7 @@ public class GameInstance {
      * @param message - the message to broadcast
      */
     public void notifyAllPlayers(String message) {
-        getCurrentPlayersActive().forEach(player -> notifyPlayer(player, message));
+        allPlayers.forEach(player -> notifyPlayer(player, message));
     }
 
     /**

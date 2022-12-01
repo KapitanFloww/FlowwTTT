@@ -40,12 +40,15 @@ public class MatchEndListener implements Listener {
 
         // Remove player from instance
         var instance = event.getInstance();
-        instance.removePlayer(event.getVictim(), event.getReductionType());
 
+        switch (event.getReductionType()) {
+            case REMOVAL, QUIT -> instance.removePlayer(event.getVictim(), event.getReductionType());
+            case DEATH -> instance.killPlayer(event.getVictim(), event.getReductionType());
+            default -> throw new IllegalStateException("Invalid reduction type: %s".formatted(event.getReductionType()));
+        }
         // If instance is still running recalculate game result
         if(event.getInstance().getCurrentStage().getName() == Stage.RUNNING) {
             recalculateGameResult(instance);
-            return;
         }
     }
 
