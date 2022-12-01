@@ -13,8 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
-import static de.flowwindustries.flowwttt.utils.SpigotParser.mapSpawnToLocation;
-
 /**
  * Listen to a player death.
  */
@@ -60,7 +58,7 @@ public class PlayerDamageListener implements Listener {
      * Handle the case that a player would kill another player
      */
     private void handleDeath(final EntityDamageByEntityEvent event, final GameInstance instance, final Player victim, final Player damager) {
-        if((victim.getHealth() - event.getDamage()) >= 0) {
+        if((victim.getHealth() - event.getDamage()) <= 0) {
             log.info("Handling player kill: Victim: %s Killer: %s".formatted(victim.getName(), damager.getName()));
 
             // Disable the event
@@ -79,8 +77,6 @@ public class PlayerDamageListener implements Listener {
         instance.notifyPlayer(victim, "You have been murdered by %s".formatted(killer.getName()));
         instance.heal(victim);
         instance.setGameMode(victim, GameMode.SPECTATOR);
-        var lobbyLocation = mapSpawnToLocation(instance.getLobby().getLobbySpawn());
-        instance.teleport(victim, lobbyLocation);
     }
 
     private void handleKiller(Player victim, Player killer, GameInstance instance) {

@@ -93,6 +93,7 @@ public class GameInstance {
         setGameMode(player, GameMode.ADVENTURE);
         clearInventory(player);
         heal(player);
+        feed(player);
         log.config("Added player %s to game instance %s".formatted(player.getName(), identifier));
     }
 
