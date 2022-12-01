@@ -112,7 +112,7 @@ public class GameInstance {
     }
 
     /**
-     * Trigger the next stage.
+     * End the current stage and trigger the next stage.
      */
     public void startNext() {
         // End current stage

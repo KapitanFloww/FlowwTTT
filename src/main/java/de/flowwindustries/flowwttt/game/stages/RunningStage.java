@@ -53,6 +53,7 @@ public class RunningStage implements GameStage {
     public void endStage() {
         log.info("%s stage ends for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
         gameCountdown.cancel();
+        gameInstance.setLevelAll(0);
     }
 
     private void timeout() {
