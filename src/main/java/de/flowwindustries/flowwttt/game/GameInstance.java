@@ -237,6 +237,15 @@ public class GameInstance {
     }
 
     /**
+     * Feed a player.
+     * @param player - the player to feed
+     */
+    public void feed(Player player) {
+        log.config("Feeding player %s".formatted(player.getName()));
+        player.setFoodLevel(20);
+    }
+
+    /**
      * Get the current active players count.
      * @return - the amount of active players of this instance
      */

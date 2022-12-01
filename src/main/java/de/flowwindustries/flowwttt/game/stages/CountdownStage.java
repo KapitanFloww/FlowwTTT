@@ -84,6 +84,7 @@ public class CountdownStage implements GameStage {
             gameInstance.setLevel(player, 0);
             gameInstance.clearInventory(player);
             gameInstance.heal(player);
+            gameInstance.feed(player);
         }
     }
 }

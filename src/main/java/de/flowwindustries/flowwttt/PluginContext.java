@@ -7,6 +7,7 @@ import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.game.listener.EventSink;
+import de.flowwindustries.flowwttt.game.listener.FoodLevelChangeListener;
 import de.flowwindustries.flowwttt.game.listener.ListenerRegistry;
 import de.flowwindustries.flowwttt.game.listener.MatchEndListener;
 import de.flowwindustries.flowwttt.game.listener.PlayerDamageListener;
@@ -117,6 +118,7 @@ public class PluginContext {
 
     private void setupListeners() {
         listenerRegistry = new PluginContextRegistry(pluginManager, plugin);
+        listenerRegistry.registerListener(new FoodLevelChangeListener(gameManagerService));
         listenerRegistry.registerListener(new PlayerMoveListener(gameManagerService));
         listenerRegistry.registerListener(new PlayerDamageListener(gameManagerService, eventSink));
         listenerRegistry.registerListener(new StartInstanceListener(gameManagerService));
