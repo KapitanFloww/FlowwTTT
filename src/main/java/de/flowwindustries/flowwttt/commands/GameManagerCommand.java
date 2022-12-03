@@ -179,18 +179,4 @@ public class GameManagerCommand extends AbstractCommand {
         // TODO KapitanFloww implement console command logic
         return false;
     }
-
-    private static String getLobbyName(GameInstance gameInstance) {
-        if(gameInstance.getLobby() != null) {
-            return gameInstance.getLobby().getLobbyName();
-        }
-        return "Lobby not yet set";
-    }
-
-    private static String getArenaName(GameInstance gameInstance) {
-        if(gameInstance.getArena() != null) {
-            return gameInstance.getArena().getArenaName();
-        }
-        return "Arena not yet set";
-    }
 }
