@@ -16,7 +16,7 @@ public abstract class AbstractCommand implements CommandExecutor {
 
     private final String permission;
 
-    public AbstractCommand(String permission) {
+    protected AbstractCommand(String permission) {
         this.permission = permission;
     }
 
@@ -33,7 +33,7 @@ public abstract class AbstractCommand implements CommandExecutor {
                 PlayerMessage.error(NO_PERMISSION, player);
                 log.warning(String.format(NO_PERMISSION_LOG, ex.getSender().getName(), ex.getPermission()));
                 return true;
-            } catch (IllegalArgumentException ex) {
+            } catch (IllegalArgumentException | IllegalStateException ex) {
                 PlayerMessage.warn(String.format(INVALID_ARGUMENTS, ex.getMessage()), player);
                 return false;
             }
@@ -41,7 +41,7 @@ public abstract class AbstractCommand implements CommandExecutor {
         //If sender is not player
         try {
             return consoleCommand(args);
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException | IllegalStateException ex) {
             log.warning(String.format(INVALID_ARGUMENTS, ex.getMessage()));
             return false;
         }
