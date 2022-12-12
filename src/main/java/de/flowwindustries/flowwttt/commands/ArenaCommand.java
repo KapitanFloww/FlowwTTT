@@ -1,5 +1,6 @@
 package de.flowwindustries.flowwttt.commands;
 
+import de.flowwindustries.flowwttt.domain.items.ChestType;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.ChestSpawn;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
@@ -45,7 +46,8 @@ public class ArenaCommand extends AbstractCommand {
                     case "delete" -> deleteArena(player, args[1]);
                     case "info" -> infoArena(player, args[1]);
                     case "addspawn" -> addSpawn(player, args[1]);
-                    case "addchest" -> addChest(player, args[1]);
+                    case "addchest" -> addChest(player, args[1], ChestType.DEFAULT);
+                    case "addlegendary" -> addChest(player, args[1], ChestType.LEGENDARY);
                     case "list" -> {
                         if(args[1].equalsIgnoreCase("full")) {
                             listArenas(player, true);
@@ -106,15 +108,16 @@ public class ArenaCommand extends AbstractCommand {
         PlayerMessage.success(String.format("Added spawn to arena %s", arenaName), player);
     }
 
-    private void addChest(Player player, String arenaName) {
+    private void addChest(Player player, String arenaName, ChestType chestType) {
         ChestSpawn spawn = new ChestSpawn();
         spawn.setX(player.getLocation().getX());
         spawn.setY(player.getLocation().getY());
         spawn.setZ(player.getLocation().getZ());
         spawn.setWorldName(player.getWorld().getName());
+        spawn.setType(chestType);
 
         arenaService.addChestSpawn(arenaName, spawn);
-        PlayerMessage.success(String.format("Added chest to arena %s", arenaName), player);
+        PlayerMessage.success(String.format("Added chest (%s) to arena %s", chestType, arenaName), player);
     }
 
     private void removeSpawn(Player player, String arenaName, int id) {
@@ -144,12 +147,13 @@ public class ArenaCommand extends AbstractCommand {
                             playerSpawn.getWorldName()
                     )));
             arena.getChestSpawns().forEach(chestSpawn ->
-                    player.sendMessage(String.format(GOLD + "Chest " + YELLOW + "[ID: %s]: %s: %s, %s, (%s)",
+                    player.sendMessage(String.format(GOLD + "Chest " + YELLOW + "[ID: %s]: %s: %s, %s, (%s) (%s)",
                             chestSpawn.getId(),
                             COORDINATE_FORMATTER.format(chestSpawn.getX()),
                             COORDINATE_FORMATTER.format(chestSpawn.getY()),
                             COORDINATE_FORMATTER.format(chestSpawn.getZ()),
-                            chestSpawn.getWorldName()
+                            chestSpawn.getWorldName(),
+                            chestSpawn.getType()
                     )));
         }
     }
@@ -165,6 +169,7 @@ public class ArenaCommand extends AbstractCommand {
         player.sendMessage(GOLD+ "/arena delete <name>" + ChatColor.GRAY + ": " + YELLOW + " Delete the arena with that name");
         player.sendMessage(GOLD+ "/arena addspawn <name>" + ChatColor.GRAY + ": " + YELLOW + " Add a player spawn point to this arena");
         player.sendMessage(GOLD+ "/arena addchest <name>" + ChatColor.GRAY + ": " + YELLOW + " Add a chest spawn point to this arena");
+        player.sendMessage(GOLD+ "/arena addlegendary <name>" + ChatColor.GRAY + ": " + YELLOW + " Add a legendary chest spawn point to this arena");
         player.sendMessage(GOLD+ "/arena removespawn <name> <id>" + ChatColor.GRAY + ": " + YELLOW + " Remove the spawn point with the given id from the arena");
         player.sendMessage(GOLD+ "/arena removechest <name> <id>" + ChatColor.GRAY + ": " + YELLOW + " Remove the chest with the given id from the arena");
         player.sendMessage(ChatColor.GRAY + "----------------------------------------------------");

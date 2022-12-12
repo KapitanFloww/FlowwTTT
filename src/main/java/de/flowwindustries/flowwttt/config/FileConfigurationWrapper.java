@@ -4,20 +4,18 @@ import de.flowwindustries.flowwttt.TTTPlugin;
 import lombok.extern.java.Log;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.Objects;
+
 /**
  * Utility class to provide easy access to the {@link FileConfiguration}.
  */
 @Log
 public class FileConfigurationWrapper {
 
-    private static FileConfiguration fileConfiguration;
+    private final FileConfiguration fileConfiguration;
 
-    /**
-     * Initialize.
-     * @param configuration the configuration to wrap
-     */
-    public void ofConfiguration(FileConfiguration configuration) {
-        fileConfiguration = configuration;
+    public FileConfigurationWrapper(FileConfiguration fileConfiguration) {
+        this.fileConfiguration = Objects.requireNonNull(fileConfiguration);
     }
 
     /**
@@ -25,7 +23,7 @@ public class FileConfigurationWrapper {
      * @param path the key / path
      * @param payload the value
      */
-    public static void write(String path, Object payload) {
+    public void write(String path, Object payload) {
         fileConfiguration.set(path, payload);
         TTTPlugin.getInstance().saveConfig();
     }
@@ -37,7 +35,7 @@ public class FileConfigurationWrapper {
      * @return the value
      * @param <T> the return value type
      */
-    public static <T> T read(Class<T> clazz, String path) {
+    public <T> T read(Class<T> clazz, String path) {
         Object payload = fileConfiguration.get(path);
         if(payload == null) {
             throw new RuntimeException("No configuration value found for path: " + path);
@@ -53,7 +51,7 @@ public class FileConfigurationWrapper {
      * @param path the key / path
      * @return the {@link String} value
      */
-    public static String readString(String path) {
+    public String readString(String path) {
         return read(String.class, path);
     }
 
@@ -62,7 +60,7 @@ public class FileConfigurationWrapper {
      * @param path the key / path
      * @return the {@link Boolean} value
      */
-    public static boolean readBoolean(String path) {
+    public boolean readBoolean(String path) {
         return read(Boolean.class, path);
     }
 
@@ -71,7 +69,7 @@ public class FileConfigurationWrapper {
      * @param path the key / path
      * @return the {@link Integer} value
      */
-    public static int readInt(String path) {
+    public int readInt(String path) {
         return read(Integer.class, path);
     }
 }

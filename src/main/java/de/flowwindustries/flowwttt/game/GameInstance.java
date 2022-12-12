@@ -1,6 +1,7 @@
 package de.flowwindustries.flowwttt.game;
 
 import de.flowwindustries.flowwttt.commands.PlayerMessage;
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
@@ -63,10 +64,14 @@ public class GameInstance {
     private final GameManagerService gameManagerService;
     private final ArchivedGameRepository archivedGameRepository;
 
+    private final FileConfigurationWrapper configurationWrapper;
+
     private final EventSink eventSink;
 
     public GameInstance(ChestService chestService, ArenaService arenaService, RoleService roleService,
-                        GameManagerService gameManagerService, ArchivedGameRepository archivedGameRepository, EventSink eventSink) {
+                        GameManagerService gameManagerService, ArchivedGameRepository archivedGameRepository, EventSink eventSink,
+                        FileConfigurationWrapper configurationWrapper) {
+        this.configurationWrapper = Objects.requireNonNull(configurationWrapper);
         this.archivedGameRepository = Objects.requireNonNull(archivedGameRepository);
         this.gameManagerService = Objects.requireNonNull(gameManagerService);
         this.chestService = Objects.requireNonNull(chestService);
@@ -283,16 +288,16 @@ public class GameInstance {
 
     private GameStage getGameStage(Stage stage) {
         if(currentStage == null) {
-            return new LobbyStage(this, arenaService, eventSink);
+            return new LobbyStage(this, arenaService, eventSink, configurationWrapper);
         }
         if(currentStage.getName() == stage) {
             throw new IllegalStateException("Instance is already in stage %s".formatted(currentStage.getName()));
         }
         return switch (stage) {
-            case LOBBY -> new LobbyStage(this, arenaService, eventSink);
-            case COUNTDOWN -> new CountdownStage(this, chestService);
-            case GRACE_PERIOD -> new GracePeriodStage(this, roleService);
-            case RUNNING -> new RunningStage(this);
+            case LOBBY -> new LobbyStage(this, arenaService, eventSink, configurationWrapper);
+            case COUNTDOWN -> new CountdownStage(this, chestService, configurationWrapper);
+            case GRACE_PERIOD -> new GracePeriodStage(this, roleService, configurationWrapper);
+            case RUNNING -> new RunningStage(this, configurationWrapper);
             case ENDGAME -> new EndgameStage(this, chestService);
             case ARCHIVED -> new ArchiveGameStage(this, gameManagerService, archivedGameRepository);
         };

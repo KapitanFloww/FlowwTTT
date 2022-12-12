@@ -1,6 +1,7 @@
 package de.flowwindustries.flowwttt.game.stages;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.scheduled.Countdown;
@@ -9,7 +10,6 @@ import lombok.extern.java.Log;
 import java.util.Objects;
 
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_MAX_DURATION;
-import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readInt;
 import static de.flowwindustries.flowwttt.domain.enumeration.GameResult.TIME_OUT;
 
 @Log
@@ -20,8 +20,8 @@ public class RunningStage implements GameStage {
 
     private Countdown gameCountdown;
 
-    public RunningStage(GameInstance gameInstance) {
-        this.maxGameDuration = readInt(PATH_GAME_MAX_DURATION);
+    public RunningStage(GameInstance gameInstance, FileConfigurationWrapper fileConfigurationWrapper) {
+        this.maxGameDuration = Objects.requireNonNull(fileConfigurationWrapper).readInt(PATH_GAME_MAX_DURATION);
         this.gameInstance = Objects.requireNonNull(gameInstance);
     }
 

@@ -1,6 +1,7 @@
 package de.flowwindustries.flowwttt.repository;
 
 import de.flowwindustries.flowwttt.PluginContextTest;
+import de.flowwindustries.flowwttt.PluginContextTestExtension;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,8 @@ public class LobbyRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        lobbyRepository = new LobbyRepository(Lobby.class);
+        var context = PluginContextTestExtension.getPluginContext();
+        lobbyRepository = new LobbyRepository(Lobby.class, context.getConfigurationWrapper());
     }
 
     @Test

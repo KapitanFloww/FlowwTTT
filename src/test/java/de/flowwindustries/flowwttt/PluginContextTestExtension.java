@@ -14,10 +14,19 @@ public class PluginContextTestExtension implements BeforeAllCallback {
 
     private static final String TEST_CONFIG_FILE_PATH = "src/test/resources/config.yml";
 
+    private static PluginContext pluginContext;
+
     @Override
     public void beforeAll(ExtensionContext extensionContext) throws Exception {
         var testConfig = new YamlConfiguration();
         testConfig.load(TEST_CONFIG_FILE_PATH);
-        new PluginContext(testConfig, new File(TEST_CONFIG_FILE_PATH), new TestPluginManager(), new TestPlugin());
+        pluginContext = new PluginContext(testConfig, new File(TEST_CONFIG_FILE_PATH), new TestPluginManager(), new TestPlugin());
+    }
+
+    public static PluginContext getPluginContext() {
+        if(pluginContext == null) {
+            throw new IllegalStateException("PluginContext not initialized");
+        }
+        return pluginContext;
     }
 }

@@ -1,5 +1,6 @@
 package de.flowwindustries.flowwttt.services.impl;
 
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
@@ -13,8 +14,6 @@ import java.util.Collection;
 import java.util.Optional;
 
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_DEFAULT_LOBBY;
-import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readString;
-import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.write;
 
 @Log
 @RequiredArgsConstructor
@@ -26,6 +25,7 @@ public class LobbyServiceImpl implements LobbyService {
 
     private final ArenaService arenaService;
     private final LobbyRepository lobbyRepository;
+    private final FileConfigurationWrapper fileConfigurationWrapper;
 
     @Override
     public void createLobby(String lobbyName) {
@@ -54,12 +54,12 @@ public class LobbyServiceImpl implements LobbyService {
     @Override
     public void setDefaultLobby(String lobbyName) {
         log.info("Request to set default lobby name: " + lobbyName);
-        write(PATH_GAME_DEFAULT_LOBBY, lobbyName);
+        fileConfigurationWrapper.write(PATH_GAME_DEFAULT_LOBBY, lobbyName);
     }
 
     @Override
     public String getDefaultLobbyName() {
-        return readString(PATH_GAME_DEFAULT_LOBBY);
+        return fileConfigurationWrapper.readString(PATH_GAME_DEFAULT_LOBBY);
     }
 
     @Override

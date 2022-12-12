@@ -1,5 +1,6 @@
 package de.flowwindustries.flowwttt.services.impl;
 
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
@@ -44,9 +45,11 @@ public class GameManagerServiceImpl implements GameManagerService {
     private final ArchivedGameRepository archivedGameRepository;
     private final EventSink eventSink;
 
+    private final FileConfigurationWrapper configurationWrapper;
+
     @Override
     public GameInstance createInstance(Lobby lobby) {
-        GameInstance gameInstance = new GameInstance(chestService, arenaService, roleService, this, archivedGameRepository, eventSink);
+        GameInstance gameInstance = new GameInstance(chestService, arenaService, roleService, this, archivedGameRepository, eventSink, configurationWrapper);
         gameInstance.setLobby(lobby);
         instances.add(gameInstance);
         log.info("Created " +

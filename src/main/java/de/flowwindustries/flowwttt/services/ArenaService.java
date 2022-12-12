@@ -19,7 +19,7 @@ public interface ArenaService {
 
     /**
      * Add a chest spawn point to the arena.
-     * @param name he name of the arena
+     * @param name the name of the arena
      * @param chestSpawn the location of the chest spawner
      * @throws IllegalArgumentException if the arena does not exist
      */

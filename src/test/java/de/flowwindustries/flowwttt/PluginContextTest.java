@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * Used to mark this test as Spigot plugin test.
- * Will start up an in-memory H2 database and load config file from test resources.
+ * Will start up an in-memory H2 database and load config file from {@code /test/resources/config.yml}.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

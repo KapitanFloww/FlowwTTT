@@ -1,6 +1,7 @@
 package de.flowwindustries.flowwttt.game.stages;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.game.listener.EventSink;
@@ -17,8 +18,10 @@ public class LobbyStage implements GameStage {
     private final ArenaService arenaService;
     private final GameInstance gameInstance;
     private final EventSink eventSink;
+    private final FileConfigurationWrapper fileConfigurationWrapper;
 
-    public LobbyStage(GameInstance gameInstance, ArenaService arenaService, EventSink eventSink) {
+    public LobbyStage(GameInstance gameInstance, ArenaService arenaService, EventSink eventSink, FileConfigurationWrapper fileConfigurationWrapper) {
+        this.fileConfigurationWrapper = Objects.requireNonNull(fileConfigurationWrapper);
         this.gameInstance = Objects.requireNonNull(gameInstance);
         this.arenaService = Objects.requireNonNull(arenaService);
         this.eventSink = Objects.requireNonNull(eventSink);
@@ -37,7 +40,7 @@ public class LobbyStage implements GameStage {
     @Override
     public void beginStage() {
         log.info("%s stage has begun for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
-        lobbyIdler = new Idler(TTTPlugin.getInstance(), gameInstance, arenaService, eventSink);
+        lobbyIdler = new Idler(TTTPlugin.getInstance(), gameInstance, arenaService, eventSink, fileConfigurationWrapper);
         lobbyIdler.schedule();
     }
 

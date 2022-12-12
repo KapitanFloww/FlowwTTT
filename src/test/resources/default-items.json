@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Training Sword",
+    "material": "WOODEN_SWORD",
+    "amount": 1
+  },
+  {
+    "name": "Blunt Sword",
+    "material": "STONE_SWORD",
+    "amount": 1
+  },
+  {
+    "name": "Hunting Bow",
+    "material": "BOW",
+    "amount": 1
+  },
+  {
+    "name": "Arrow Set",
+    "material": "ARROW",
+    "amount": 32
+  }
+]

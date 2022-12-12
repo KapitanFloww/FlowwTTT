@@ -2,15 +2,17 @@ package de.flowwindustries.flowwttt.scheduled;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.commands.PlayerMessage;
-import de.flowwindustries.flowwttt.game.GameInstance;
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.events.StartInstanceEvent;
+import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.game.listener.EventSink;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import lombok.extern.java.Log;
 import org.bukkit.Bukkit;
 
+import java.util.Objects;
+
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_MIN_PLAYERS;
-import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readInt;
 
 @Log
 public class Idler implements Runnable {
@@ -21,8 +23,8 @@ public class Idler implements Runnable {
     private final ArenaService arenaService;
     private final EventSink eventSink;
 
-    public Idler(TTTPlugin plugin, GameInstance instance, ArenaService arenaService, EventSink eventSink) {
-        this.minRequiredPlayers = readInt(PATH_GAME_MIN_PLAYERS);
+    public Idler(TTTPlugin plugin, GameInstance instance, ArenaService arenaService, EventSink eventSink, FileConfigurationWrapper fileConfigurationWrapper) {
+        this.minRequiredPlayers = Objects.requireNonNull(fileConfigurationWrapper).readInt(PATH_GAME_MIN_PLAYERS);
         this.plugin = plugin;
         this.instance = instance;
         this.arenaService = arenaService;

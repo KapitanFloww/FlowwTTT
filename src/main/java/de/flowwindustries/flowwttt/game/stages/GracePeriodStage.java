@@ -2,6 +2,7 @@ package de.flowwindustries.flowwttt.game.stages;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.commands.PlayerMessage;
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.game.GameInstance;
@@ -13,7 +14,6 @@ import org.bukkit.entity.Player;
 import java.util.Objects;
 
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_GRACE_PERIOD_DURATION;
-import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readInt;
 
 @Log
 public class GracePeriodStage implements GameStage {
@@ -24,8 +24,8 @@ public class GracePeriodStage implements GameStage {
 
     private Countdown gracePeriodCountdown;
 
-    public GracePeriodStage(GameInstance gameInstance, RoleService roleService) {
-        this.gracePeriodDuration = readInt(PATH_GAME_GRACE_PERIOD_DURATION);
+    public GracePeriodStage(GameInstance gameInstance, RoleService roleService, FileConfigurationWrapper fileConfigurationWrapper) {
+        this.gracePeriodDuration = Objects.requireNonNull(fileConfigurationWrapper).readInt(PATH_GAME_GRACE_PERIOD_DURATION);
         this.gameInstance = Objects.requireNonNull(gameInstance);
         this.roleService = Objects.requireNonNull(roleService);
     }
