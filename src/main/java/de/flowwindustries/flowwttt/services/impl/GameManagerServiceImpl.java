@@ -96,6 +96,9 @@ public class GameManagerServiceImpl implements GameManagerService {
     public Stage nextStage(String identifier) throws IllegalStateException {
         log.info("Triggering next stage of instance: " + identifier);
         GameInstance instance = getGameInstanceSafe(identifier);
+        if(instance.getCurrentStage().getName() == Stage.LOBBY && instance.getArena() == null) {
+            throw new IllegalStateException("Must set an arena first");
+        }
         instance.startNext();
         return instance.getCurrentStage().getName();
     }
