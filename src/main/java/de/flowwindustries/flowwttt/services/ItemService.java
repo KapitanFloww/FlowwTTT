@@ -1,28 +1,35 @@
 package de.flowwindustries.flowwttt.services;
 
-import org.bukkit.entity.Player;
+import de.flowwindustries.flowwttt.domain.items.ChestItem;
 
 /**
- * Service responsible for the creation and delivery of {@link org.bukkit.inventory.ItemStack}s to {@link org.bukkit.entity.Player}s.
+ * Service responsible for the creation and delivery of {@link ChestItem}s.
  * May be used when a player clicks on a chest.
- * Item configurations are being loaded from the configuration file.
  */
 public interface ItemService {
 
     /**
-     * Load the item set configurations from the configuration file.
+     * Load the {@link ChestItem}s from the configuration file.
      */
     void loadItemConfigurations();
 
     /**
-     * Deliver a default set of items to this player.
-     * @param player the player to deliver the items to
+     * Get a default {@link ChestItem}.
      */
-    void getDefaultItems(Player player);
+    ChestItem getDefaultItem();
 
     /**
-     * Deliver a legendary set of items to this player.
-     * @param player the player to deliver the items to
+     * Get a legendary {@link ChestItem}.
      */
-    void getLegendaryItems(Player player);
+    ChestItem getLegendaryItem();
+
+    /**
+     * Get the amount of loaded default items.
+     */
+    Integer getDefaultItemsCount();
+
+    /**
+     * Get the amount of loaded legendary items.
+     */
+    Integer getLegendaryItemsCount();
 }

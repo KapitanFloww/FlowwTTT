@@ -1,5 +1,6 @@
 package de.flowwindustries.flowwttt.repository;
 
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
@@ -20,8 +21,6 @@ import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBER
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_DDL_AUTO;
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_DIALECT;
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_HIBERNATE_SHOW_SQL;
-import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readBoolean;
-import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readString;
 
 /**
  * Abstract class to provide easy functionality to access the persistence layer.
@@ -32,6 +31,7 @@ import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readSt
 public abstract class AbstractRepository<E, I> {
 
     private final Class<E> entityClass;
+    private final FileConfigurationWrapper fileConfigurationWrapper;
     private static EntityManagerFactory entityManagerFactory;
 
     /**
@@ -161,10 +161,10 @@ public abstract class AbstractRepository<E, I> {
 
     private void setupEntityManagerFactory() {
         if (entityManagerFactory == null || !entityManagerFactory.isOpen()) {
-            var showSQL = readBoolean(PATH_HIBERNATE_SHOW_SQL);
-            var ddlAuto = readString(PATH_HIBERNATE_DDL_AUTO);
-            var hibernateDialect = readString(PATH_HIBERNATE_DIALECT);
-            var connectionProviderClass = readString(PATH_HIBERNATE_CONNECTION_PROVIDER);
+            var showSQL = fileConfigurationWrapper.readBoolean(PATH_HIBERNATE_SHOW_SQL);
+            var ddlAuto = fileConfigurationWrapper.readString(PATH_HIBERNATE_DDL_AUTO);
+            var hibernateDialect = fileConfigurationWrapper.readString(PATH_HIBERNATE_DIALECT);
+            var connectionProviderClass = fileConfigurationWrapper.readString(PATH_HIBERNATE_CONNECTION_PROVIDER);
 
             Properties properties = new Properties();
             properties.put("hibernate.show_sql", showSQL);
@@ -172,10 +172,10 @@ public abstract class AbstractRepository<E, I> {
             properties.put("hibernate.connection.provider_class", connectionProviderClass);
             properties.put("hibernate.dialect", hibernateDialect);
 
-            var jdbcDriver = readString(PATH_DATASOURCE_JDBC_DRIVER);
-            var jdbcUrl = readString(PATH_DATASOURCE_JDBC_URL);
-            var databaseUsername = readString(PATH_DATASOURCE_JDBC_USERNAME);
-            var databasePassword = readString(PATH_DATASOURCE_JDBC_PASSWORD);
+            var jdbcDriver = fileConfigurationWrapper.readString(PATH_DATASOURCE_JDBC_DRIVER);
+            var jdbcUrl = fileConfigurationWrapper.readString(PATH_DATASOURCE_JDBC_URL);
+            var databaseUsername = fileConfigurationWrapper.readString(PATH_DATASOURCE_JDBC_USERNAME);
+            var databasePassword = fileConfigurationWrapper.readString(PATH_DATASOURCE_JDBC_PASSWORD);
 
             properties.put("jakarta.persistence.jdbc.driver", jdbcDriver);
             properties.put("jakarta.persistence.jdbc.url", jdbcUrl);

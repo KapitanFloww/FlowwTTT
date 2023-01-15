@@ -1,5 +1,6 @@
 package de.flowwindustries.flowwttt.repository;
 
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.repository.callbacks.AsyncCallbackExceptionHandler;
 import de.flowwindustries.flowwttt.repository.callbacks.AsyncCallbackObject;
 import de.flowwindustries.flowwttt.repository.callbacks.AsyncCallbackObjectCollection;
@@ -14,8 +15,8 @@ public abstract class AbstractAsyncRepository<E, I> extends AbstractRepository<E
     /**
      * Constructor
      */
-    public AbstractAsyncRepository(Class<E> entityClass) {
-        super(entityClass);
+    public AbstractAsyncRepository(Class<E> entityClass, FileConfigurationWrapper fileConfigurationWrapper) {
+        super(entityClass, fileConfigurationWrapper);
     }
 
     /**

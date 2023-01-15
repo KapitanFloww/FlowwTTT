@@ -1,8 +1,11 @@
 package de.flowwindustries.flowwttt.domain.locations;
 
 import de.flowwindustries.flowwttt.domain.Identifiable;
+import de.flowwindustries.flowwttt.domain.items.ChestType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -54,4 +57,11 @@ public class ChestSpawn implements Identifiable<Integer> {
      */
     @Column(name = "world_name", nullable = false)
     private String worldName;
+
+    /**
+     * Chest type.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "chest_type", nullable = false)
+    private ChestType type;
 }

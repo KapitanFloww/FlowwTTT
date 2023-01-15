@@ -32,3 +32,7 @@ game:
   max-duration: 300
   players:
     min: 4
+  items:
+    path:
+      default: src/test/resources/default-items.json
+      legendary: src/test/resources/legendary-items.json

@@ -25,6 +25,11 @@ public class DefaultConfiguration {
     public static final String PATH_GAME_GRACE_PERIOD_DURATION = "game.grace-period-duration";
     public static final String PATH_GAME_MIN_PLAYERS = "game.players.min";
 
+    public static final String PATH_ITEMS = "game.items.path.default";
+    public static final String PATH_LEGENDARY_ITEMS = "game.items.path.legendary";
+
+    private DefaultConfiguration() {}
+
     /**
      * Setup default configuration values for the given {@link FileConfiguration}.
      * @param configuration the configuration file
@@ -47,6 +52,9 @@ public class DefaultConfiguration {
         configuration.addDefault(PATH_GAME_GRACE_PERIOD_DURATION, 30);
         configuration.addDefault(PATH_GAME_LOBBY_COUNTDOWN_DURATION, 30);
         configuration.addDefault(PATH_GAME_MIN_PLAYERS, 4);
+
+        configuration.addDefault(PATH_ITEMS, "plugins/FlowwTTT/default-items.json");
+        configuration.addDefault(PATH_LEGENDARY_ITEMS, "plugins/FlowwTTT/legendary-items.json");
         //Save configuration
         configuration.options().copyDefaults(true);
     }

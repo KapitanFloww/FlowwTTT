@@ -1,8 +1,8 @@
 package de.flowwindustries.flowwttt.services.impl;
 
+import de.flowwindustries.flowwttt.domain.Identifiable;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.ChestSpawn;
-import de.flowwindustries.flowwttt.domain.Identifiable;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;

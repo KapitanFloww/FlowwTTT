@@ -1,5 +1,6 @@
 package de.flowwindustries.flowwttt.services.impl;
 
+import de.flowwindustries.flowwttt.domain.items.ChestType;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.ChestSpawn;
 import de.flowwindustries.flowwttt.services.ChestService;
@@ -17,36 +18,40 @@ public class ChestServiceImpl implements ChestService {
 
     @Override
     public void spawnChests(Arena arena) {
-        arena.getChestSpawns().stream()
-                .map(chestToLocation)
-                .map(Location::getBlock)
-                .forEach(block -> {
-                    if(block.getType() == Material.AIR) {
-                        block.setType(Material.CHEST);
-                        return;
-                    }
-                    log.warning(String.format("Chest location obstructed: %s, %s, %s", block.getX(), block.getY(), block.getZ()));
-                });
-        log.info(String.format("Spawned %s chests in arena %s", arena.getChestSpawns().size(), arena.getArenaName()));
+        arena.getChestSpawns().forEach(chestSpawn -> {
+            final var chestBlock = CHEST_LOCATION_FUNCTION.apply(chestSpawn).getBlock();
+            final var chestMaterial = getChestMaterial(chestSpawn.getType());
+
+            if(chestBlock.getType() != Material.AIR) {
+                log.warning("Location of chest %s obstructed: %s, %s, %s".formatted(chestSpawn.getId(), chestBlock.getX(), chestBlock.getY(), chestBlock.getZ()));
+                return;
+            }
+            chestBlock.setType(chestMaterial);
+            log.info("Spawned chest %s (%s) in arena %s".formatted(chestSpawn.getId(), chestSpawn.getType(), arena.getArenaName()));
+        });
     }
 
     @Override
     public void deSpawnChests(Arena arena) {
         arena.getChestSpawns().stream()
-                .map(chestToLocation)
+                .map(CHEST_LOCATION_FUNCTION)
                 .map(Location::getBlock)
                 .forEach(block -> {
-                    if(block.getType() == Material.CHEST) {
+                    if(block.getType() == Material.CHEST || block.getType() == Material.ENDER_CHEST) {
                         block.setType(Material.AIR);
                         return;
                     }
                     log.warning(String.format("Found no chest on: %s, %s, %s", block.getX(), block.getY(), block.getZ()));
                 });
-        log.info(String.format("De-spawned chests in arena %s", arena.getArenaName()));
+        log.info(String.format("Despawned chests in arena %s", arena.getArenaName()));
     }
 
-    private final Function<ChestSpawn, Location> chestToLocation = chestSpawn -> {
+    private static final Function<ChestSpawn, Location> CHEST_LOCATION_FUNCTION = chestSpawn -> {
         World world = getWorldSafe(chestSpawn.getWorldName());
         return new Location(world, chestSpawn.getX(), (chestSpawn.getY()), chestSpawn.getZ());
     };
+
+    private static Material getChestMaterial(ChestType chestType) {
+        return chestType == ChestType.DEFAULT ? Material.CHEST : Material.ENDER_CHEST;
+    }
 }

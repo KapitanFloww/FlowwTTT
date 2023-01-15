@@ -1,6 +1,7 @@
 package de.flowwindustries.flowwttt.game.stages;
 
 import de.flowwindustries.flowwttt.TTTPlugin;
+import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.PlayerSpawn;
 import de.flowwindustries.flowwttt.game.GameInstance;
@@ -17,7 +18,6 @@ import org.bukkit.entity.Player;
 import java.util.Objects;
 
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_LOBBY_COUNTDOWN_DURATION;
-import static de.flowwindustries.flowwttt.config.FileConfigurationWrapper.readInt;
 
 @Log
 public class CountdownStage implements GameStage {
@@ -28,8 +28,8 @@ public class CountdownStage implements GameStage {
 
     private Countdown lobbyCountdown;
 
-    public CountdownStage(GameInstance gameInstance, ChestService chestService) {
-        this.countDownDuration = readInt(PATH_GAME_LOBBY_COUNTDOWN_DURATION);
+    public CountdownStage(GameInstance gameInstance, ChestService chestService, FileConfigurationWrapper configurationWrapper) {
+        this.countDownDuration = configurationWrapper.readInt(PATH_GAME_LOBBY_COUNTDOWN_DURATION);
         this.gameInstance = Objects.requireNonNull(gameInstance);
         this.chestService = Objects.requireNonNull(chestService);
     }
