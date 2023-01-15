@@ -8,6 +8,8 @@ import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.bukkit.GameMode;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -30,34 +32,68 @@ public class PlayerDamageListener implements Listener {
      */
     @EventHandler
     public void onPlayerDamage(final EntityDamageByEntityEvent event) {
-        if(!(event.getEntity() instanceof Player player)) {
+
+        // Check if damaged entity is player
+        if (!(event.getEntity() instanceof Player player)) {
             log.fine("Damaged entity a not player. Skipping event handling...");
             return;
         }
-
-        if(!(event.getDamager() instanceof Player damager)) {
-            log.fine("Damager not a player. Skipping event handling...");
-            return;
-        }
-
+        // Check if player is in valid game instance
         GameInstance instance = gameManagerService.getInstanceOf(player);
-        if(instance == null) {
+        if (instance == null) {
             log.fine("Player %s is not in a valid game instance".formatted(player.getName()));
             return;
         }
-        if(instance.getCurrentStage().getName() == Stage.RUNNING) {
-            handleDeath(event, instance, player, damager);
+
+        // When stage is NOT in running, disable the damage
+        if (instance.getCurrentStage().getName() != Stage.RUNNING) {
+            log.fine("Instance not in %s-stage".formatted(Stage.RUNNING));
+            disableDamage(event);
             return;
         }
-        log.fine("Ignoring damage for player %s".formatted(player.getName()));
+
+        // Else handle the damage
+        final Player damager = determineDamager(event.getDamager());
+        handleDamage(event, instance, player, damager);
+    }
+
+    private static void disableDamage(final EntityDamageByEntityEvent event) {
+        log.fine("Disabling damage...");
+
+        // Disable default damage
         event.setDamage(0.0d);
+
+        // Check for arrow
+        final Entity damageEntity = event.getDamager();
+        if (damageEntity instanceof Arrow arrow) {
+            arrow.setDamage(0.0d);
+        }
         event.setCancelled(true);
     }
 
-    /**
-     * Handle the case that a player would kill another player
-     */
-    private void handleDeath(final EntityDamageByEntityEvent event, final GameInstance instance, final Player victim, final Player damager) {
+    private static Player determineDamager(Entity entity) {
+        final Player damager;
+        switch (entity.getType()) {
+            case ARROW -> damager = getShootingPlayerSafe((Arrow) entity);
+            case PLAYER -> damager = (Player) entity;
+            default -> throw new RuntimeException("Damager is %s neither player nor arrow.".formatted(entity.getName()));
+        }
+        return damager;
+    }
+
+    private static Player getShootingPlayerSafe(Arrow arrow) throws IllegalArgumentException {
+        final var shooter = arrow.getShooter();
+        if (shooter == null) {
+            throw new IllegalArgumentException("Shooter must not be null");
+        }
+        if (shooter instanceof Player player) {
+            return player;
+        }
+        throw new IllegalArgumentException("Shooter is not a player: %s".formatted(shooter.toString()));
+    }
+
+    // Check for "death" of a player
+    private void handleDamage(final EntityDamageByEntityEvent event, final GameInstance instance, final Player victim, final Player damager) {
         if((victim.getHealth() - event.getDamage()) <= 0) {
             log.info("Handling player kill: Victim: %s Killer: %s".formatted(victim.getName(), damager.getName()));
 
@@ -82,6 +118,6 @@ public class PlayerDamageListener implements Listener {
     private void handleKiller(Player victim, Player killer, GameInstance instance) {
         var role = instance.getPlayerRoles().get(victim);
         instance.notifyPlayer(killer, "You killed %s [%s]".formatted(victim.getName(), role));
-        // TODO KapitanFLoww add or remove karma
+        // TODO KapitanFloww add or remove karma
     }
 }
