@@ -1,4 +1,4 @@
-package de.flowwindustries.flowwttt.game.listener;
+package de.flowwindustries.flowwttt.game.events;
 
 import lombok.extern.java.Log;
 import org.bukkit.event.Event;

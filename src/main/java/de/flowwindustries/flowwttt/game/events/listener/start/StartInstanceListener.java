@@ -1,6 +1,5 @@
-package de.flowwindustries.flowwttt.game.listener;
+package de.flowwindustries.flowwttt.game.events.listener.start;
 
-import de.flowwindustries.flowwttt.events.StartInstanceEvent;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;

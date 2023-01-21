@@ -4,7 +4,7 @@ import de.flowwindustries.flowwttt.TTTPlugin;
 import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.game.GameInstance;
-import de.flowwindustries.flowwttt.game.listener.EventSink;
+import de.flowwindustries.flowwttt.game.events.EventSink;
 import de.flowwindustries.flowwttt.scheduled.Idler;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import lombok.extern.java.Log;
