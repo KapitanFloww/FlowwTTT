@@ -97,6 +97,9 @@ public class GameManagerServiceImpl implements GameManagerService {
                 .withTttSourceEvent(null);
         eventSink.push(reduceEvent);
 
+        // Teleport player back to lobby
+        instance.teleport(player, SpigotParser.mapSpawnToLocation(instance.getLobby().getLobbySpawn()));
+
         playerInstanceMap.remove(player);
     }
 
