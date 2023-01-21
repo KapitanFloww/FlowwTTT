@@ -1,4 +1,4 @@
-package de.flowwindustries.flowwttt.events;
+package de.flowwindustries.flowwttt.game.events.listener.start;
 
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import lombok.RequiredArgsConstructor;

@@ -1,22 +1,24 @@
 package de.flowwindustries.flowwttt;
 
 import de.flowwindustries.flowwttt.config.DefaultConfiguration;
+import de.flowwindustries.flowwttt.game.events.listener.damage.TTTPlayerDamageEventListener;
+import de.flowwindustries.flowwttt.game.events.listener.death.PlayerQuitListener;
+import de.flowwindustries.flowwttt.game.events.listener.death.TTTPlayerReduceEventListener;
 import de.flowwindustries.flowwttt.items.DefaultItemsConfig;
 import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
-import de.flowwindustries.flowwttt.game.listener.EventSink;
-import de.flowwindustries.flowwttt.game.listener.FoodLevelChangeListener;
-import de.flowwindustries.flowwttt.game.listener.ListenerRegistry;
-import de.flowwindustries.flowwttt.game.listener.MatchEndListener;
-import de.flowwindustries.flowwttt.game.listener.PlayerDamageListener;
-import de.flowwindustries.flowwttt.game.listener.PlayerMoveListener;
-import de.flowwindustries.flowwttt.game.listener.PlayerOpenChestListener;
-import de.flowwindustries.flowwttt.game.listener.PluginContextEventSink;
-import de.flowwindustries.flowwttt.game.listener.PluginContextRegistry;
-import de.flowwindustries.flowwttt.game.listener.StartInstanceListener;
+import de.flowwindustries.flowwttt.game.events.EventSink;
+import de.flowwindustries.flowwttt.game.events.listener.foodlevel.FoodLevelChangeListener;
+import de.flowwindustries.flowwttt.game.events.ListenerRegistry;
+import de.flowwindustries.flowwttt.game.events.listener.damage.EntityDamageListener;
+import de.flowwindustries.flowwttt.game.events.listener.move.PlayerMoveListener;
+import de.flowwindustries.flowwttt.game.events.listener.chest.PlayerOpenChestListener;
+import de.flowwindustries.flowwttt.game.events.PluginContextEventSink;
+import de.flowwindustries.flowwttt.game.events.PluginContextRegistry;
+import de.flowwindustries.flowwttt.game.events.listener.start.StartInstanceListener;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
 import de.flowwindustries.flowwttt.repository.LobbyRepository;
@@ -129,12 +131,19 @@ public class PluginContext {
 
     private void setupListeners() {
         listenerRegistry = new PluginContextRegistry(pluginManager, plugin);
+        listenerRegistry.registerListener(new StartInstanceListener(gameManagerService));
+
+        // Game Listeners
         listenerRegistry.registerListener(new FoodLevelChangeListener(gameManagerService));
         listenerRegistry.registerListener(new PlayerMoveListener(gameManagerService));
-        listenerRegistry.registerListener(new PlayerDamageListener(gameManagerService, eventSink));
-        listenerRegistry.registerListener(new StartInstanceListener(gameManagerService));
-        listenerRegistry.registerListener(new MatchEndListener(gameManagerService, eventSink));
         listenerRegistry.registerListener(new PlayerOpenChestListener(itemService, gameManagerService));
+
+        // Entity Damage Listeners
+        listenerRegistry.registerListener(new EntityDamageListener(gameManagerService, eventSink));
+        listenerRegistry.registerListener(new TTTPlayerDamageEventListener(eventSink));
+        // Entity Death Listeners
+        listenerRegistry.registerListener(new PlayerQuitListener(eventSink, gameManagerService));
+        listenerRegistry.registerListener(new TTTPlayerReduceEventListener());
     }
 
     private static Map<Role, Float> getRoleRatios() {

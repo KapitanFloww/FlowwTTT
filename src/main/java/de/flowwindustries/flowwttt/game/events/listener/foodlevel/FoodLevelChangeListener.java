@@ -1,4 +1,4 @@
-package de.flowwindustries.flowwttt.game.listener;
+package de.flowwindustries.flowwttt.game.events.listener.foodlevel;
 
 import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.services.GameManagerService;
@@ -24,6 +24,7 @@ public class FoodLevelChangeListener implements Listener {
      */
     @EventHandler
     public void onFoodLevelChange(final FoodLevelChangeEvent event) {
+        log.config("Handling FoodLevelChangeEvent: Entity: %s".formatted(event.getEntity().getName()));
         if(!(event.getEntity() instanceof  Player player)) {
             log.fine("Food-Level change entity not a player");
             return;

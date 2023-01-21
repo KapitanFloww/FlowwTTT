@@ -1,4 +1,4 @@
-package de.flowwindustries.flowwttt.game.listener;
+package de.flowwindustries.flowwttt.game.events.listener.chest;
 
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.items.ChestItem;

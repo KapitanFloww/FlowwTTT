@@ -6,10 +6,10 @@ import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
-import de.flowwindustries.flowwttt.events.PlayerReduceEvent;
-import de.flowwindustries.flowwttt.events.ReductionType;
 import de.flowwindustries.flowwttt.game.GameInstance;
-import de.flowwindustries.flowwttt.game.listener.EventSink;
+import de.flowwindustries.flowwttt.game.events.EventSink;
+import de.flowwindustries.flowwttt.game.events.listener.death.ReductionType;
+import de.flowwindustries.flowwttt.game.events.listener.death.TTTPlayerReduceEvent;
 import de.flowwindustries.flowwttt.game.stages.ArchiveGameStage;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
@@ -89,7 +89,12 @@ public class GameManagerServiceImpl implements GameManagerService {
         log.info("Removing player " + player.getName() + " from instance: " + identifier);
         GameInstance instance = getGameInstanceSafe(identifier);
 
-        PlayerReduceEvent reduceEvent = new PlayerReduceEvent(instance, ReductionType.REMOVAL, player);
+        TTTPlayerReduceEvent reduceEvent = new TTTPlayerReduceEvent()
+                .withInstance(instance)
+                .withReductionType(ReductionType.REMOVAL)
+                .withVictim(player)
+                .withKiller(null)
+                .withTttSourceEvent(null);
         eventSink.push(reduceEvent);
 
         playerInstanceMap.remove(player);
