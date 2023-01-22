@@ -122,9 +122,9 @@ public class GameManagerCommand extends AbstractCommand {
 
     private void infoInstance(Player player, String instanceId) {
         GameInstance gameInstance = gameManagerService.getGameInstanceSafe(instanceId);
-        var removedPlayers = gameInstance.getRemovedPlayers();
-        var livingPlayers = gameInstance.getActivePlayers();
-        var allPlayers = gameInstance.getAllPlayers();
+        var removedPlayers = gameInstance.getRemovedPlayers().keySet().stream().map(Player::getName).distinct().toList();
+        var livingPlayers = gameInstance.getActivePlayers().keySet().stream().map(Player::getName).distinct().toList();
+        var allPlayers = gameInstance.getAllPlayers().stream().map(Player::getName).distinct().toList();
 
         PlayerMessage.success("Displaying info for %s".formatted(gameInstance.getIdentifier()), player);
         PlayerMessage.info("Current Stage: %s".formatted(gameInstance.getCurrentStage().getName()), player);
@@ -144,12 +144,12 @@ public class GameManagerCommand extends AbstractCommand {
     private void listInstances(Player player) {
         Collection<GameInstance> instances = gameManagerService.list();
         PlayerMessage.info("Listing %s instances".formatted(instances.size()), player);
-        instances.forEach(gameInstance -> PlayerMessage.success("Instance: %s Arena: %s Lobby %s Living Players: %s"
+        instances.forEach(gameInstance -> PlayerMessage.success("Instance: %s - Arena: %s - Lobby %s - Players: %s"
                 .formatted(gameInstance.getIdentifier(),
-                        gameInstance.getArena() != null ? gameInstance.getArena().getArenaName() : "Arena not set",
+                        gameInstance.getArena() != null ? gameInstance.getArena().getArenaName() : "Not set",
                         gameInstance.getLobby().getLobbyName(),
-                        gameInstance.getActivePlayers().size()
-                ))
+                        gameInstance.getAllPlayers().size()
+                ), player)
         );
     }
 
