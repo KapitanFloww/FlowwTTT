@@ -144,12 +144,20 @@ public class GameManagerCommand extends AbstractCommand {
     private void listInstances(Player player) {
         Collection<GameInstance> instances = gameManagerService.list();
         PlayerMessage.info("Listing %s instances".formatted(instances.size()), player);
-        instances.forEach(gameInstance -> PlayerMessage.success("Instance: %s - Arena: %s - Lobby %s - Players: %s"
-                .formatted(gameInstance.getIdentifier(),
-                        gameInstance.getArena() != null ? gameInstance.getArena().getArenaName() : "Not set",
-                        gameInstance.getLobby().getLobbyName(),
-                        gameInstance.getAllPlayers().size()
-                ), player)
+        instances.forEach(gameInstance -> {
+                    String message = "Instance: %s (%s) - Arena: %s - Lobby %s - Players: %s".formatted(
+                            gameInstance.getIdentifier(),
+                            gameInstance.getCurrentStage().getName().name(),
+                            gameInstance.getArena() != null ? gameInstance.getArena().getArenaName() : "Not set",
+                            gameInstance.getLobby().getLobbyName(),
+                            gameInstance.getAllPlayers().size());
+
+                    if (gameInstance.getCurrentStage().getName() == Stage.ARCHIVED) {
+                        PlayerMessage.info(message, player);
+                    } else {
+                        PlayerMessage.success(message, player);
+                    }
+                }
         );
     }
 
