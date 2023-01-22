@@ -2,15 +2,13 @@ package de.flowwindustries.flowwttt.services.impl;
 
 import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
-import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.game.events.EventSink;
-import de.flowwindustries.flowwttt.game.events.listener.death.ReductionType;
-import de.flowwindustries.flowwttt.game.events.listener.death.TTTPlayerReduceEvent;
-import de.flowwindustries.flowwttt.game.stages.ArchiveGameStage;
+import de.flowwindustries.flowwttt.game.events.listener.reduce.ReductionType;
+import de.flowwindustries.flowwttt.game.events.listener.reduce.TTTPlayerReduceEvent;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
@@ -19,7 +17,6 @@ import de.flowwindustries.flowwttt.services.RoleService;
 import de.flowwindustries.flowwttt.utils.SpigotParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
-import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -116,20 +113,9 @@ public class GameManagerServiceImpl implements GameManagerService {
 
     @Override
     public void end(String identifier) {
+        log.info("Request to end instance: %s".formatted(identifier));
         GameInstance instance = getGameInstanceSafe(identifier);
-        if(instance.getCurrentStage().getName() == Stage.ARCHIVED) {
-            throw new IllegalArgumentException("Instance is already archived: %s".formatted(instance.getIdentifier()));
-        }
-        // End the current stage
-        instance.getCurrentStage().endStage();
-        // Cancel the match
-        instance.setGameResult(GameResult.CANCELED);
-        instance.setCurrentStage(new ArchiveGameStage(instance, this, archivedGameRepository));
-        instance.healAll();
-        instance.clearInventoryAll();
-        instance.setGameModeAll(GameMode.ADVENTURE);
-        var lobbyLocation = SpigotParser.mapSpawnToLocation(instance.getLobby().getLobbySpawn());
-        instance.teleportAll(lobbyLocation);
+        instance.end();
     }
 
     @Override

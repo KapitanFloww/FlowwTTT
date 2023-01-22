@@ -1,4 +1,4 @@
-package de.flowwindustries.flowwttt.game.events.listener.death;
+package de.flowwindustries.flowwttt.game.events.listener.reduce;
 
 import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.game.events.EventSink;
