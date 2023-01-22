@@ -38,6 +38,12 @@ public interface GameManagerService {
     GameInstance getInstanceOf(Player player);
 
     /**
+     * Get the current instance.
+     * @return the current instance
+     */
+    GameInstance getCurrentInstance();
+
+    /**
      * Start the given game instance in the given arena.
      * @param identifier of the instance to start
      * @param arena the arena to play in

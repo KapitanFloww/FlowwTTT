@@ -33,6 +33,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class GameManagerServiceImpl implements GameManagerService {
 
+    /**
+     * The current instance.
+     */
+    private GameInstance currentInstance;
+
     private static final List<GameInstance> instances = new ArrayList<>();
     private static final Map<Player, String> playerInstanceMap = new HashMap<>();
 
@@ -51,6 +56,10 @@ public class GameManagerServiceImpl implements GameManagerService {
         instances.add(gameInstance);
         log.info("Created " +
                 "new game instance with id: " + gameInstance.getIdentifier());
+
+        // Set the current instance
+        this.currentInstance = gameInstance;
+
         return gameInstance;
     }
 
@@ -58,6 +67,15 @@ public class GameManagerServiceImpl implements GameManagerService {
     public GameInstance getInstanceOf(Player player) {
         log.config("Request to get instance of player: " + player.getName());
         return getGameInstance(playerInstanceMap.get(player));
+    }
+
+    @Override
+    public GameInstance getCurrentInstance() {
+        log.config("Request to get current instance");
+        if (currentInstance == null) {
+            throw new IllegalStateException("No current instance found...");
+        }
+        return currentInstance;
     }
 
 

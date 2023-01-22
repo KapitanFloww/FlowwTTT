@@ -57,5 +57,8 @@ public class ArchiveGameStage implements GameStage {
     @Override
     public void endStage() {
         gameManagerService.cleanupInstance(gameInstance.getIdentifier());
+
+        // Create new instance
+        gameManagerService.createInstance(gameInstance.getLobby());
     }
 }

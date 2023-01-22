@@ -1,24 +1,25 @@
 package de.flowwindustries.flowwttt;
 
 import de.flowwindustries.flowwttt.config.DefaultConfiguration;
-import de.flowwindustries.flowwttt.game.events.listener.damage.TTTPlayerDamageEventListener;
-import de.flowwindustries.flowwttt.game.events.listener.reduce.PlayerQuitListener;
-import de.flowwindustries.flowwttt.game.events.listener.reduce.TTTPlayerReduceEventListener;
-import de.flowwindustries.flowwttt.items.DefaultItemsConfig;
 import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
 import de.flowwindustries.flowwttt.game.events.EventSink;
-import de.flowwindustries.flowwttt.game.events.listener.foodlevel.FoodLevelChangeListener;
 import de.flowwindustries.flowwttt.game.events.ListenerRegistry;
-import de.flowwindustries.flowwttt.game.events.listener.damage.EntityDamageListener;
-import de.flowwindustries.flowwttt.game.events.listener.move.PlayerMoveListener;
-import de.flowwindustries.flowwttt.game.events.listener.chest.PlayerOpenChestListener;
 import de.flowwindustries.flowwttt.game.events.PluginContextEventSink;
 import de.flowwindustries.flowwttt.game.events.PluginContextRegistry;
+import de.flowwindustries.flowwttt.game.events.listener.chest.PlayerOpenChestListener;
+import de.flowwindustries.flowwttt.game.events.listener.damage.EntityDamageListener;
+import de.flowwindustries.flowwttt.game.events.listener.damage.TTTPlayerDamageEventListener;
+import de.flowwindustries.flowwttt.game.events.listener.foodlevel.FoodLevelChangeListener;
+import de.flowwindustries.flowwttt.game.events.listener.join.PlayerJoinListener;
+import de.flowwindustries.flowwttt.game.events.listener.move.PlayerMoveListener;
+import de.flowwindustries.flowwttt.game.events.listener.reduce.PlayerQuitListener;
+import de.flowwindustries.flowwttt.game.events.listener.reduce.TTTPlayerReduceEventListener;
 import de.flowwindustries.flowwttt.game.events.listener.start.StartInstanceListener;
+import de.flowwindustries.flowwttt.items.DefaultItemsConfig;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.repository.ArenaRepository;
 import de.flowwindustries.flowwttt.repository.LobbyRepository;
@@ -45,6 +46,7 @@ import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_MIN_PLAYERS;
 
@@ -83,6 +85,13 @@ public class PluginContext {
         setupRepositories();
         setupServices();
         setupListeners();
+
+        // At the end create a new instance
+        final Optional<Lobby> lobby = this.lobbyRepository.findAll().stream().findFirst();
+        if (lobby.isPresent()) {
+            log.info("Creating new instance for lobby: %s".formatted(lobby.get().getLobbyName()));
+            gameManagerService.createInstance(lobby.get());
+        }
     }
 
     private void setupConfig(FileConfiguration fileConfiguration, File configFile) {
@@ -136,6 +145,7 @@ public class PluginContext {
         listenerRegistry.registerListener(new StartInstanceListener(gameManagerService));
 
         // Game Listeners
+        listenerRegistry.registerListener(new PlayerJoinListener(gameManagerService));
         listenerRegistry.registerListener(new FoodLevelChangeListener(gameManagerService));
         listenerRegistry.registerListener(new PlayerMoveListener(gameManagerService));
         listenerRegistry.registerListener(new PlayerOpenChestListener(itemService, gameManagerService));

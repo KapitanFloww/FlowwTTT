@@ -64,7 +64,8 @@ public class TTTPlayerReduceEventListener implements Listener {
 
         // Handle the instance
         switch (instance.getCurrentStage().getName()) {
-            case LOBBY, GRACE_PERIOD, COUNTDOWN -> recheckGameStartable(instance);
+            case LOBBY -> instance.removePlayer(event.getVictim(), ReductionType.QUIT);
+            case GRACE_PERIOD, COUNTDOWN -> recheckGameStartable(instance);
             case RUNNING -> recalculateGameResult(instance);
             case ENDGAME, ARCHIVED -> log.info("Player left game already in stage %s. Nothing to do.".formatted(instance.getCurrentStage().getName())); // Nothing to do. Skipping.
 

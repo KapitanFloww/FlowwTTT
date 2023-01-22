@@ -108,7 +108,7 @@ public class GameInstance {
     }
 
     /**
-     * Remove a player from this instance.
+     * Remove & kill a player from this instance.
      * @param player - the player to remove
      * @param reductionType - the reduction type
      */
