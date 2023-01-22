@@ -20,7 +20,7 @@ public class TTTPlayerDamageEventListener implements Listener {
 
     @EventHandler
     public void handleTTTPlayerDamage(final TTTPlayerDamageEvent event) {
-        log.info("Handling TTTPlayerDamageEvent: Victim: %s, Damager: %s, DamageCause: %s".formatted(event.getVictim().getName(), event.getDamager().getName(), event.getDamageCause()));
+        log.info("Handling TTTPlayerDamageEvent: Victim: %s, Damager: %s, DamageCause: %s".formatted(event.getVictim().getName(), event.getDamager(), event.getDamageCause()));
 
         final var instance = event.getInstance();
         final var victim = event.getVictim();
