@@ -38,7 +38,7 @@ public class EndgameStage implements GameStage {
     @Override
     public void beginStage() {
         log.info("%s stage has begun for instance: %s".formatted(getName(), gameInstance.getIdentifier()));
-        chestService.deSpawnChests(gameInstance.getArena());
+        chestService.despawnChests(gameInstance.getArena());
 
         if(gameInstance.getGameResult() == GameResult.PENDING) {
             log.warning("GameResult still on %s. Changing to %s".formatted(GameResult.PENDING, GameResult.CANCELED));

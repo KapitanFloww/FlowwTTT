@@ -32,7 +32,7 @@ public class ChestServiceImpl implements ChestService {
     }
 
     @Override
-    public void deSpawnChests(Arena arena) {
+    public void despawnChests(Arena arena) {
         arena.getChestSpawns().stream()
                 .map(CHEST_LOCATION_FUNCTION)
                 .map(Location::getBlock)

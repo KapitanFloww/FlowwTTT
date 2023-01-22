@@ -322,6 +322,9 @@ public class GameInstance {
         setGameModeAll(GameMode.ADVENTURE);
         var lobbyLocation = SpigotParser.mapSpawnToLocation(getLobby().getLobbySpawn());
         teleportAll(lobbyLocation);
+
+        // Try to de-spawn chests
+        chestService.despawnChests(this.getArena());
     }
 
     /**

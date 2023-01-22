@@ -17,5 +17,5 @@ public interface ChestService {
      * Despawn the chests of this {@link Arena}.
      * @param arena the arena
      */
-    void deSpawnChests(Arena arena);
+    void despawnChests(Arena arena);
 }
