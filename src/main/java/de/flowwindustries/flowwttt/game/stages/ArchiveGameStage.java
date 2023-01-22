@@ -56,9 +56,21 @@ public class ArchiveGameStage implements GameStage {
 
     @Override
     public void endStage() {
-        gameManagerService.cleanupInstance(gameInstance.getIdentifier());
-
         // Create new instance
-        gameManagerService.createInstance(gameInstance.getLobby());
+        final var nextInstance = gameManagerService.createInstance(gameInstance.getLobby()).getIdentifier();
+        log.info("Adding active players to new instance: %s".formatted(nextInstance));
+        gameInstance.getActivePlayers().forEach((player, role) -> {
+            if (player.isOnline()) {
+                gameManagerService.addPlayer(nextInstance, player);
+            }
+        });
+        log.info("Adding removed players to new instance: %s".formatted(nextInstance));
+        gameInstance.getRemovedPlayers().forEach((player, reductionType) -> {
+            if (player.isOnline()) {
+                gameManagerService.addPlayer(nextInstance, player);
+            }
+        });
+
+        gameManagerService.cleanupInstance(gameInstance.getIdentifier());
     }
 }
