@@ -1,4 +1,4 @@
-package de.flowwindustries.flowwttt.game.events.listener.death;
+package de.flowwindustries.flowwttt.game.events.listener.reduce;
 
 import de.flowwindustries.flowwttt.domain.enumeration.GameResult;
 import de.flowwindustries.flowwttt.domain.enumeration.Role;
@@ -11,8 +11,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 
+import java.util.Objects;
+
 @Log
 public class TTTPlayerReduceEventListener implements Listener {
+
+    private final Integer minPlayers;
+
+    public TTTPlayerReduceEventListener(Integer minPlayers) {
+        this.minPlayers = Objects.requireNonNull(minPlayers);
+    }
 
     @EventHandler
     public void handleTTTPlayerReduceEvent(final TTTPlayerReduceEvent event) {
@@ -41,6 +49,10 @@ public class TTTPlayerReduceEventListener implements Listener {
             }
             case KILL -> {
 
+                if (instance.getCurrentStage().getName() != Stage.RUNNING) {
+                    throw new IllegalStateException("There's been a kill, but instance %s is not yet %s".formatted(instance.getIdentifier(), Stage.RUNNING));
+                }
+
                 // Handle victim and killer
                 handleVictim(event.getVictim(), event.getKiller(), instance, event.getTttSourceEvent().getDamageCause());
                 handleKiller(event.getVictim(), event.getKiller(), instance);
@@ -50,9 +62,12 @@ public class TTTPlayerReduceEventListener implements Listener {
             default -> throw new IllegalStateException("Invalid ReductionType: %s".formatted(event.getReductionType()));
         }
 
-        // If instance is still RUNNING, recalculate game result
-        if (instance.getCurrentStage().getName() == Stage.RUNNING) {
-            recalculateGameResult(instance);
+        // Handle the instance
+        switch (instance.getCurrentStage().getName()) {
+            case LOBBY, GRACE_PERIOD, COUNTDOWN -> recheckGameStartable(instance);
+            case RUNNING -> recalculateGameResult(instance);
+            case ENDGAME, ARCHIVED -> log.info("Player left game already in stage %s. Nothing to do.".formatted(instance.getCurrentStage().getName())); // Nothing to do. Skipping.
+
         }
     }
 
@@ -85,6 +100,17 @@ public class TTTPlayerReduceEventListener implements Listener {
         }
         instance.notifyPlayer(killer, message.formatted(victim.getName(), killerRole));
         // TODO KapitanFloww add or remove karma
+    }
+
+    private void recheckGameStartable(GameInstance instance) {
+        log.info("Checking if instance can still be started: %s".formatted(instance.getIdentifier()));
+        final int playerCount = instance.getCurrentPlayerCount();
+
+        if (playerCount < minPlayers) {
+            log.info("Not enough players to start instance %s: %s".formatted(instance.getIdentifier(), instance.getCurrentPlayerCount()));
+            instance.end();
+            instance.notifyAllPlayers("Not enough players to start. Game will be cancelled.");
+        }
     }
 
     private static void recalculateGameResult(GameInstance instance) {

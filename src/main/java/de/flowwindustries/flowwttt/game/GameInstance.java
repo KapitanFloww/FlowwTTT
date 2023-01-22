@@ -7,7 +7,7 @@ import de.flowwindustries.flowwttt.domain.enumeration.Role;
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
 import de.flowwindustries.flowwttt.domain.locations.Arena;
 import de.flowwindustries.flowwttt.domain.locations.Lobby;
-import de.flowwindustries.flowwttt.game.events.listener.death.ReductionType;
+import de.flowwindustries.flowwttt.game.events.listener.reduce.ReductionType;
 import de.flowwindustries.flowwttt.game.events.EventSink;
 import de.flowwindustries.flowwttt.game.stages.ArchiveGameStage;
 import de.flowwindustries.flowwttt.game.stages.CountdownStage;
@@ -21,6 +21,7 @@ import de.flowwindustries.flowwttt.services.ArenaService;
 import de.flowwindustries.flowwttt.services.ChestService;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import de.flowwindustries.flowwttt.services.RoleService;
+import de.flowwindustries.flowwttt.utils.SpigotParser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -301,6 +302,26 @@ public class GameInstance {
             case ENDGAME -> new EndgameStage(this, chestService);
             case ARCHIVED -> new ArchiveGameStage(this, gameManagerService, archivedGameRepository);
         };
+    }
+
+    /**
+     * Cancel and end this instance.
+     * @throws IllegalArgumentException if this instance is already in {@link Stage#ARCHIVED}.
+     */
+    public void end() throws IllegalArgumentException {
+        if(getCurrentStage().getName() == Stage.ARCHIVED) {
+            throw new IllegalArgumentException("Instance is already archived: %s".formatted(getIdentifier()));
+        }
+        // End the current stage
+        getCurrentStage().endStage();
+        // Cancel the match
+        setGameResult(GameResult.CANCELED);
+        setCurrentStage(new ArchiveGameStage(this, gameManagerService, archivedGameRepository));
+        healAll();
+        clearInventoryAll();
+        setGameModeAll(GameMode.ADVENTURE);
+        var lobbyLocation = SpigotParser.mapSpawnToLocation(getLobby().getLobbySpawn());
+        teleportAll(lobbyLocation);
     }
 
     /**

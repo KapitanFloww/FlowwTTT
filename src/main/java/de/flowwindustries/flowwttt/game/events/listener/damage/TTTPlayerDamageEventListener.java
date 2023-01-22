@@ -1,8 +1,8 @@
 package de.flowwindustries.flowwttt.game.events.listener.damage;
 
 import de.flowwindustries.flowwttt.domain.enumeration.Stage;
-import de.flowwindustries.flowwttt.game.events.listener.death.ReductionType;
-import de.flowwindustries.flowwttt.game.events.listener.death.TTTPlayerReduceEvent;
+import de.flowwindustries.flowwttt.game.events.listener.reduce.ReductionType;
+import de.flowwindustries.flowwttt.game.events.listener.reduce.TTTPlayerReduceEvent;
 import de.flowwindustries.flowwttt.game.events.EventSink;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;

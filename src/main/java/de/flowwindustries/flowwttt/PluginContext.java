@@ -2,8 +2,8 @@ package de.flowwindustries.flowwttt;
 
 import de.flowwindustries.flowwttt.config.DefaultConfiguration;
 import de.flowwindustries.flowwttt.game.events.listener.damage.TTTPlayerDamageEventListener;
-import de.flowwindustries.flowwttt.game.events.listener.death.PlayerQuitListener;
-import de.flowwindustries.flowwttt.game.events.listener.death.TTTPlayerReduceEventListener;
+import de.flowwindustries.flowwttt.game.events.listener.reduce.PlayerQuitListener;
+import de.flowwindustries.flowwttt.game.events.listener.reduce.TTTPlayerReduceEventListener;
 import de.flowwindustries.flowwttt.items.DefaultItemsConfig;
 import de.flowwindustries.flowwttt.config.FileConfigurationWrapper;
 import de.flowwindustries.flowwttt.domain.ArchivedGame;
@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static de.flowwindustries.flowwttt.config.DefaultConfiguration.PATH_GAME_MIN_PLAYERS;
 
 @Log
 @Getter
@@ -143,7 +145,7 @@ public class PluginContext {
         listenerRegistry.registerListener(new TTTPlayerDamageEventListener(eventSink));
         // Entity Death Listeners
         listenerRegistry.registerListener(new PlayerQuitListener(eventSink, gameManagerService));
-        listenerRegistry.registerListener(new TTTPlayerReduceEventListener());
+        listenerRegistry.registerListener(new TTTPlayerReduceEventListener(this.configurationWrapper.readInt(PATH_GAME_MIN_PLAYERS)));
     }
 
     private static Map<Role, Float> getRoleRatios() {
