@@ -146,7 +146,7 @@ public class GameManagerCommand extends AbstractCommand {
         PlayerMessage.info("Listing %s instances".formatted(instances.size()), player);
         instances.forEach(gameInstance -> PlayerMessage.success("Instance: %s Arena: %s Lobby %s Living Players: %s"
                 .formatted(gameInstance.getIdentifier(),
-                        gameInstance.getArena().getArenaName(),
+                        gameInstance.getArena() != null ? gameInstance.getArena().getArenaName() : "Arena not set",
                         gameInstance.getLobby().getLobbyName(),
                         gameInstance.getActivePlayers().size()
                 ))
