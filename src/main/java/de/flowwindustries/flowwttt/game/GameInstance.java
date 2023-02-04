@@ -104,7 +104,7 @@ public class GameInstance {
         clearInventory(player);
         heal(player);
         feed(player);
-        log.config("Added player %s to game instance %s".formatted(player.getName(), identifier));
+        log.info("Added player %s to game instance %s".formatted(player.getName(), identifier));
     }
 
     /**
@@ -115,7 +115,7 @@ public class GameInstance {
     public void removePlayer(Player player, ReductionType reductionType) {
         killPlayer(player, reductionType);
         allPlayers.remove(player);
-        log.config("Removed player " + player.getName() + " from game instance " +  identifier);
+        log.info("Removed player " + player.getName() + " from game instance " +  identifier);
     }
 
     /**
@@ -126,7 +126,7 @@ public class GameInstance {
     public void killPlayer(Player player, ReductionType reductionType) {
         activePlayers.remove(player);
         removedPlayers.put(player, reductionType);
-        log.config("Killed player " + player.getName() + " in game instance " +  identifier);
+        log.info("Killed player " + player.getName() + " in game instance " +  identifier);
     }
 
     /**
@@ -163,7 +163,7 @@ public class GameInstance {
      * @param player - the player to heal
      */
     public void heal(Player player) {
-        log.config("Healing player %s".formatted(player.getName()));
+        log.info("Healing player %s".formatted(player.getName()));
         player.setHealth(20);
     }
 
@@ -179,7 +179,7 @@ public class GameInstance {
      * @param player - the player to clear
      */
     public void clearInventory(Player player) {
-        log.config("Clearing inventory of player %s".formatted(player.getName()));
+        log.info("Clearing inventory of player %s".formatted(player.getName()));
         player.getInventory().clear();
     }
 
@@ -196,7 +196,7 @@ public class GameInstance {
      * @param gameMode - the target game-mode
      */
     public void setGameMode(Player player, GameMode gameMode) {
-        log.config("Changing game-mode of player %s to: %s".formatted(player.getName(), gameMode));
+        log.info("Changing game-mode of player %s to: %s".formatted(player.getName(), gameMode));
         player.setGameMode(gameMode);
     }
 
@@ -214,7 +214,7 @@ public class GameInstance {
      * @param location - the location to teleport to
      */
     public void teleport(Player player, Location location) {
-        log.config("Teleporting player %s to: %s".formatted(player.getName(), location));
+        log.info("Teleporting player %s to: %s".formatted(player.getName(), location));
         player.teleport(location);
     }
 
@@ -232,7 +232,7 @@ public class GameInstance {
      * @param level - the level to set
      */
     public void setLevel(Player player, int level) {
-        log.config("Setting level of player %s to: %s".formatted(player.getName(), level));
+        log.info("Setting level of player %s to: %s".formatted(player.getName(), level));
         player.setLevel(level);
     }
 
@@ -250,7 +250,7 @@ public class GameInstance {
      * @param message - the message to send
      */
     public void notifyPlayer(Player player, String message) {
-        log.config("Notifying player %s. Message: %s".formatted(player.getName(), message));
+        log.info("Notifying player %s. Message: %s".formatted(player.getName(), message));
         PlayerMessage.info(message, player);
     }
 
@@ -267,7 +267,7 @@ public class GameInstance {
      * @param player - the player to feed
      */
     public void feed(Player player) {
-        log.config("Feeding player %s".formatted(player.getName()));
+        log.info("Feeding player %s".formatted(player.getName()));
         player.setFoodLevel(20);
     }
 

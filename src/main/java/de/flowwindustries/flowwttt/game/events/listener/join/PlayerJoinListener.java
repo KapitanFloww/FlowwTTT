@@ -25,7 +25,7 @@ public class PlayerJoinListener implements Listener {
         final var lobby = instance.getLobby();
         final var lobbyLocation = SpigotParser.mapSpawnToLocation(lobby.getLobbySpawn());
         event.getPlayer().teleport(lobbyLocation);
-        gameManagerService.addPlayer(instance.getIdentifier(), event.getPlayer());
+        gameManagerService.addPlayer(event.getPlayer());
     }
 
 

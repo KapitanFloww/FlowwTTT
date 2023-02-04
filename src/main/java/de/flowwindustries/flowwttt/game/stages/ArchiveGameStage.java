@@ -6,9 +6,12 @@ import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.repository.ArchivedGameRepository;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.extern.java.Log;
+import org.bukkit.entity.Player;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Log
@@ -56,21 +59,17 @@ public class ArchiveGameStage implements GameStage {
 
     @Override
     public void endStage() {
+        // Cache all players
+        final List<Player> players = new ArrayList<>(this.gameInstance.getAllPlayers());
+        // Cleanup this instance
+        this.gameInstance.cleanup();
         // Create new instance
-        final var nextInstance = gameManagerService.createInstance(gameInstance.getLobby()).getIdentifier();
-        log.info("Adding active players to new instance: %s".formatted(nextInstance));
-        gameInstance.getActivePlayers().forEach((player, role) -> {
+        gameManagerService.createInstance(gameInstance.getLobby());
+        // Add cached players to new instance - if they're still online
+        players.forEach(player -> {
             if (player.isOnline()) {
-                gameManagerService.addPlayer(nextInstance, player);
+                gameManagerService.addPlayer(player);
             }
         });
-        log.info("Adding removed players to new instance: %s".formatted(nextInstance));
-        gameInstance.getRemovedPlayers().forEach((player, reductionType) -> {
-            if (player.isOnline()) {
-                gameManagerService.addPlayer(nextInstance, player);
-            }
-        });
-
-        gameManagerService.cleanupInstance(gameInstance.getIdentifier());
     }
 }

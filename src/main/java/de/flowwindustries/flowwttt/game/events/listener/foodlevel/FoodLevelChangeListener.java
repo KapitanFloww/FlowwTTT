@@ -1,6 +1,5 @@
 package de.flowwindustries.flowwttt.game.events.listener.foodlevel;
 
-import de.flowwindustries.flowwttt.game.GameInstance;
 import de.flowwindustries.flowwttt.services.GameManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -24,15 +23,14 @@ public class FoodLevelChangeListener implements Listener {
      */
     @EventHandler
     public void onFoodLevelChange(final FoodLevelChangeEvent event) {
-        log.config("Handling FoodLevelChangeEvent: Entity: %s".formatted(event.getEntity().getName()));
-        if(!(event.getEntity() instanceof  Player player)) {
+        log.info("Handling FoodLevelChangeEvent: Entity: %s".formatted(event.getEntity().getName()));
+        if (!(event.getEntity() instanceof  Player player)) {
             log.fine("Food-Level change entity not a player");
             return;
         }
 
-        GameInstance instance = gameManagerService.getInstanceOf(player);
-        if(instance == null) {
-            log.fine("Player %s is not in a valid game instance".formatted(player.getName()));
+        if (!gameManagerService.isInCurrentInstance(player)) {
+            log.info("Player %s is not in current game instance".formatted(player.getName()));
             return;
         }
 

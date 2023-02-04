@@ -19,13 +19,11 @@ public class PlayerQuitListener implements Listener {
     @EventHandler
     public void onPlayerDamage(final PlayerQuitEvent event) {
         log.info("Handling PlayerQuitEvent: Player %s".formatted(event.getPlayer()));
-        final GameInstance instance = gameManagerService.getInstanceOf(event.getPlayer());
-
-        // Skip if player is not in valid instance
-        if(instance == null) {
+        if (!gameManagerService.isInCurrentInstance(event.getPlayer())) {
+            log.info("Player is not in current instance. Skipping");
             return;
         }
-
+        final GameInstance instance = gameManagerService.getCurrentInstance();
         TTTPlayerReduceEvent reduceEvent = new TTTPlayerReduceEvent()
                 .withInstance(instance)
                 .withReductionType(ReductionType.QUIT)

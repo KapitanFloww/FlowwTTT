@@ -14,7 +14,7 @@ public class StartInstanceListener implements Listener {
 
     @EventHandler
     public void handleStartInstanceEvent(StartInstanceEvent event) {
-        log.info(String.format("Received event to start instance %s with arena %s", event.getInstanceId(), event.getArena().getArenaName()));
-        gameManagerService.start(event.getInstanceId(), event.getArena());
+        log.info(String.format("Received event to start current instance (%s) with arena %s", event.getInstanceId(), event.getArena().getArenaName()));
+        gameManagerService.start(event.getArena());
     }
 }

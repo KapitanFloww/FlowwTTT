@@ -39,10 +39,11 @@ public class PlayerOpenChestListener implements Listener {
         if(block.getType() == Material.CHEST || block.getType() == Material.ENDER_CHEST) {
             // Determine player & instance
             var player = event.getPlayer();
-            var instance = gameManagerService.getInstanceOf(player);
-            if(instance == null) {
+            if (!gameManagerService.isInCurrentInstance(player)) {
+                log.info("Player %s is not in current instance. Skipping".formatted(player.getName()));
                 return;
             }
+            var instance = gameManagerService.getCurrentInstance();
             if(instance.getCurrentStage().getName() != Stage.RUNNING && instance.getCurrentStage().getName() != Stage.GRACE_PERIOD) {
                 return;
             }

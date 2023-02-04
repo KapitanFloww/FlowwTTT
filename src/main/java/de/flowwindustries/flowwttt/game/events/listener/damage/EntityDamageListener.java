@@ -38,10 +38,11 @@ public class EntityDamageListener implements Listener {
 
         // Skip if player is not in instance
         final var player = (Player) entity;
-        final var instance = gameManagerService.getInstanceOf(player);
-        if (instance == null) {
+        if (!gameManagerService.isInCurrentInstance(player)) {
+            log.info("Player is not in current instance. Skipping...");
             return;
         }
+        final var instance = gameManagerService.getCurrentInstance();
 
         // Handle entity damage by entity if applicable
         if (event instanceof EntityDamageByEntityEvent entityDamageByEntityEvent) {
@@ -60,7 +61,6 @@ public class EntityDamageListener implements Listener {
                 .withSourceEvent(event);
 
         eventSink.push(tttDamageEvent);
-        log.info("Published event: %s".formatted(tttDamageEvent));
     }
 
     private void onEntityDamageByEntity(final EntityDamageByEntityEvent event, GameInstance instance, Player victim) {

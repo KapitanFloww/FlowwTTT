@@ -22,20 +22,11 @@ public interface GameManagerService {
     GameInstance createInstance(Lobby lobby);
 
     /**
-     * Null-safe way to get a game instance by its identifier.
-     * @param identifier the identifier of the requested game instance
-     * @return the requested game instance. Never null
-     * @throws IllegalArgumentException if the instance is not found
-     * @throws IllegalStateException if more than one instance is found
+     * Checks if the player is part of the current instance.
+     * @param player the player to be checked
+     * @return @{@code true} if the player is part of the current instance. Otherwise {@code false}
      */
-    GameInstance getGameInstanceSafe(String identifier) throws IllegalArgumentException, IllegalStateException;
-
-    /**
-     * Get a players instance.
-     * @param player the player to get the instance from.
-     * @return the game instance of {@code null} if the player is not accoiated to an instance
-     */
-    GameInstance getInstanceOf(Player player);
+    boolean isInCurrentInstance(Player player);
 
     /**
      * Get the current instance.
@@ -44,45 +35,34 @@ public interface GameManagerService {
     GameInstance getCurrentInstance();
 
     /**
-     * Start the given game instance in the given arena.
-     * @param identifier of the instance to start
-     * @param arena the arena to play in
+     * Start the current instance with the given arena.
+     * @param arena the arena to start the instance with
      */
-    void start(String identifier, Arena arena);
+    void start(Arena arena);
 
     /**
-     * Add a player to this game instance.
-     * @param identifier of the instance to add the player to
+     * Add a player to the current game instance.
      * @param player the player to be added
      */
-    void addPlayer(String identifier, Player player);
+    void addPlayer(Player player);
 
     /**
-     * Remove a player from this game instance.
-     * @param identifier of the instance to be removed
+     * Remove a player from the current game instance.
      * @param player the player to be added
      */
-    void deletePlayer(String identifier, Player player);
+    void deletePlayer(Player player);
 
     /**
      * Go to the next stage of the match.
-     * @param identifier of the instance to change
      * @return the updated stage of this instance
      * @throws IllegalStateException if this instance's stage is invalid
      */
-    Stage nextStage(String identifier) throws IllegalStateException ;
+    Stage nextStage() throws IllegalStateException ;
 
     /**
-     * End a game instance (the normal way).
-     * @param identifier of the instance to end
+     * End the current instance.
      */
-    void end(String identifier);
-
-    /**
-     * List all instances.
-     * @return all instances
-     */
-    Collection<GameInstance> list();
+    void end();
 
     /**
      * List all archived instances.
@@ -91,7 +71,7 @@ public interface GameManagerService {
     Collection<ArchivedGame> listArchived();
 
     /**
-     * Cleanup the given instance.
+     * Cleanup the current instance.
      */
-    void cleanupInstance(String identifier);
+    void cleanupInstance();
 }

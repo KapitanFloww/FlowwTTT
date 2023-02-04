@@ -21,11 +21,12 @@ public class PlayerMoveListener implements Listener {
      */
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        log.config("Handling PlayerMoveEvent: Player: %s".formatted(event.getPlayer().getName()));
-        GameInstance instance = gameManagerService.getInstanceOf(event.getPlayer());
-        if(instance == null) {
+        log.info("Handling PlayerMoveEvent: Player: %s".formatted(event.getPlayer().getName()));
+
+        if(!gameManagerService.isInCurrentInstance(event.getPlayer())) {
             return;
         }
+        GameInstance instance = gameManagerService.getCurrentInstance();
         if(instance.getCurrentStage().getName() != Stage.COUNTDOWN) {
             return;
         }

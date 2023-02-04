@@ -19,11 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -34,12 +30,9 @@ import java.util.Optional;
 public class GameManagerServiceImpl implements GameManagerService {
 
     /**
-     * The current instance.
+     * Pointer to the current active instance.
      */
     private GameInstance currentInstance;
-
-    private static final List<GameInstance> instances = new ArrayList<>();
-    private static final Map<Player, String> playerInstanceMap = new HashMap<>();
 
     private final ChestService chestService;
     private final ArenaService arenaService;
@@ -53,59 +46,49 @@ public class GameManagerServiceImpl implements GameManagerService {
     public GameInstance createInstance(Lobby lobby) {
         GameInstance gameInstance = new GameInstance(chestService, arenaService, roleService, this, archivedGameRepository, eventSink, configurationWrapper);
         gameInstance.setLobby(lobby);
-        instances.add(gameInstance);
-        log.info("Created " +
-                "new game instance with id: " + gameInstance.getIdentifier());
 
-        // Set the current instance
+        // Update the pointer to the current instance
         this.currentInstance = gameInstance;
+
+        log.info("Created new instance %s in lobby: %s".formatted(gameInstance.getIdentifier(), lobby.getLobbyName()));
 
         return gameInstance;
     }
 
     @Override
-    public GameInstance getInstanceOf(Player player) {
-        log.config("Request to get instance of player: " + player.getName());
-        return getGameInstance(playerInstanceMap.get(player));
+    public boolean isInCurrentInstance(Player player) {
+        boolean isInInstance = currentInstance.getAllPlayers().stream().anyMatch(it -> it.getName().equals(player.getName()));
+        log.info("Check if player %s is in current instance %s: %s".formatted(player.getName(), currentInstance.getIdentifier(), isInInstance));
+        return isInInstance;
     }
 
     @Override
     public GameInstance getCurrentInstance() {
-        log.config("Request to get current instance");
-        if (currentInstance == null) {
-            throw new IllegalStateException("No current instance found...");
+        return Optional.ofNullable(currentInstance).orElseThrow(() -> new IllegalStateException("No current instance found!"));
+    }
+
+    @Override
+    public void start(Arena arena) {
+        log.info("Request to start instance: " + currentInstance.getIdentifier() + " in arena: " + arena.getArenaName());
+        if(currentInstance.getCurrentStage().getName() != Stage.LOBBY) {
+            throw new IllegalStateException("Instance is already running. Current stage: %s".formatted(currentInstance.getCurrentStage().getName()));
         }
-        return currentInstance;
-    }
-
-
-    @Override
-    public void start(String identifier, Arena arena) {
-        log.info("Request to start instance: " + identifier + " in arena: " + arena.getArenaName());
-        GameInstance instance = getGameInstanceSafe(identifier);
-
-        if(instance.getCurrentStage().getName() != Stage.LOBBY) {
-            throw new IllegalStateException("Instance is already running. Current stage: %s".formatted(instance.getCurrentStage().getName()));
-        }
-        instance.setArena(arena);
-        instance.startNext(); // will trigger countdown stage
+        currentInstance.setArena(arena);
+        currentInstance.startNext(); // will trigger countdown stage
     }
 
     @Override
-    public void addPlayer(String identifier, Player player) {
-        log.info("Adding player " + player.getName() + " to instance: " + identifier);
-        GameInstance instance = getGameInstanceSafe(identifier);
-        instance.addPlayer(player);
-        playerInstanceMap.put(player, instance.getIdentifier());
+    public void addPlayer(Player player) {
+        log.info("Adding player " + player.getName() + " to instance: " + currentInstance.getIdentifier());
+        currentInstance.addPlayer(player);
     }
 
     @Override
-    public void deletePlayer(String identifier, Player player) {
-        log.info("Removing player " + player.getName() + " from instance: " + identifier);
-        GameInstance instance = getGameInstanceSafe(identifier);
+    public void deletePlayer(Player player) {
+        log.info("Removing player " + player.getName() + " from instance: " + currentInstance.getIdentifier());
 
         TTTPlayerReduceEvent reduceEvent = new TTTPlayerReduceEvent()
-                .withInstance(instance)
+                .withInstance(currentInstance)
                 .withReductionType(ReductionType.REMOVAL)
                 .withVictim(player)
                 .withKiller(null)
@@ -113,67 +96,35 @@ public class GameManagerServiceImpl implements GameManagerService {
         eventSink.push(reduceEvent);
 
         // Teleport player back to lobby
-        instance.teleport(player, SpigotParser.mapSpawnToLocation(instance.getLobby().getLobbySpawn()));
-
-        playerInstanceMap.remove(player);
+        var lobbySpawn = currentInstance.getLobby().getLobbySpawn();
+        currentInstance.teleport(player, SpigotParser.mapSpawnToLocation(lobbySpawn));
     }
 
     @Override
-    public Stage nextStage(String identifier) throws IllegalStateException {
-        log.info("Triggering next stage of instance: " + identifier);
-        GameInstance instance = getGameInstanceSafe(identifier);
-        if(instance.getCurrentStage().getName() == Stage.LOBBY && instance.getArena() == null) {
+    public Stage nextStage() throws IllegalStateException {
+        log.info("Triggering next stage of instance: " + currentInstance.getIdentifier());
+        if(currentInstance.getCurrentStage().getName() == Stage.LOBBY && currentInstance.getArena() == null) {
             throw new IllegalStateException("Must set an arena first");
         }
-        instance.startNext();
-        return instance.getCurrentStage().getName();
+        currentInstance.startNext();
+        return currentInstance.getCurrentStage().getName();
     }
 
     @Override
-    public void end(String identifier) {
-        log.info("Request to end instance: %s".formatted(identifier));
-        GameInstance instance = getGameInstanceSafe(identifier);
-        instance.end();
+    public void end() {
+        log.info("Request to end instance: %s".formatted(currentInstance.getIdentifier()));
+        currentInstance.end();
     }
 
     @Override
-    public Collection<GameInstance> list() {
-        log.info("Request to list all instances");
-        return instances;
+    public List<ArchivedGame> listArchived() {
+        log.info("Request to list all archived instances");
+        return archivedGameRepository.findAll().stream().toList();
     }
 
     @Override
-    public GameInstance getGameInstanceSafe(String identifier) {
-        log.config("Request to get instance with identifier: " + identifier);
-        return Optional.ofNullable(getGameInstance(identifier))
-                .orElseThrow(() -> new IllegalArgumentException("No game instance found for identifier: " + identifier));
-    }
-
-    @Override
-    public Collection<ArchivedGame> listArchived() {
-        log.config("Request to list all archived instances");
-        return archivedGameRepository.findAll();
-    }
-
-    private GameInstance getGameInstance(String identifier) {
-        List<GameInstance> instanceList = instances.stream()
-                .filter(instance -> instance.getIdentifier().equalsIgnoreCase(identifier))
-                .toList();
-        if(instanceList.isEmpty()) {
-            return null;
-        }
-        if(instanceList.size() > 1) {
-            throw new IllegalStateException("More than one instance with identifier " + identifier + " found");
-        }
-        return instanceList.get(0);
-    }
-
-    @Override
-    public void cleanupInstance(String identifier) {
-        log.info("Request to cleanup instance: %s".formatted(identifier));
-        var instance = getGameInstanceSafe(identifier);
-        var players = instance.getAllPlayers();
-        players.forEach(playerInstanceMap::remove);
-        instance.cleanup();
+    public void cleanupInstance() {
+        log.info("Request to cleanup current instance: %s".formatted(currentInstance.getIdentifier()));
+        currentInstance.cleanup();
     }
 }

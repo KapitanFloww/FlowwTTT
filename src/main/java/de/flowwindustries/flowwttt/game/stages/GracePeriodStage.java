@@ -63,7 +63,7 @@ public class GracePeriodStage implements GameStage {
     }
 
     private void assignRoles() {
-        log.config("Assigning roles for %s players".formatted(gameInstance.getCurrentPlayerCount()));
+        log.info("Assigning roles for %s players".formatted(gameInstance.getCurrentPlayerCount()));
         var roleAssignment = roleService.assignRoles(gameInstance.getCurrentPlayersActive().stream()
                 .map(Player::getName)
                 .toList());
